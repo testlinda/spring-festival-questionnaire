@@ -174,7 +174,7 @@ class ThemeManager {
       border-2 border-gray-200 dark:border-gray-700
       transition-all duration-300
       flex items-center justify-center
-      focus:outline-none focus:ring-2 focus:ring-red-500
+      focus:outline-none focus:ring-2 focus:ring-green-500
       hover:scale-110
     `.trim().replace(/\s+/g, ' ');
 

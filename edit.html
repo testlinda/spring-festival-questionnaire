@@ -52,7 +52,7 @@
     <!-- Theme Toggle Button -->
     <button 
       data-theme-toggle 
-      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-110"
+      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-500 hover:scale-110"
       aria-label="切換深色模式"
     >
       <!-- Sun Icon (深色模式時顯示) -->
@@ -74,13 +74,13 @@
       </div>
       <!-- Edit Form Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
-        <h2 class="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-6">
+        <h2 class="text-2xl font-bold text-emerald-800 dark:text-emerald-200 mb-6">
           修改資料
         </h2>
         
         <div class="space-y-6">
           <!-- Name Display -->
-          <div class="p-4 bg-amber-50 dark:bg-gray-700 rounded-lg">
+          <div class="p-4 bg-emerald-50 dark:bg-gray-700 rounded-lg">
             <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">姓名</label>
             <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{userName}}</p>
           </div>
@@ -97,7 +97,7 @@
                 type="text" 
                 maxlength="6"
                 placeholder="請輸入郵遞區號"
-                class="flex-1 min-w-[200px] px-4 py-3 border-2 border-amber-200 dark:border-amber-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white transition-all"
+                class="flex-1 min-w-[200px] px-4 py-3 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white transition-all"
               />
               <button 
                 @click="getZipCodeManually" 
@@ -107,7 +107,7 @@
               </button>
               <button 
                 @click="getZipCode" 
-                class="px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-all"
+                class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-all"
               >
                 ⚡ 自動查詢
               </button>
@@ -115,7 +115,7 @@
             
             <!-- Zip Code Status Messages -->
             <div class="mt-2">
-              <p v-if="search_loading" class="text-amber-600 dark:text-amber-400 flex items-center">
+              <p v-if="search_loading" class="text-emerald-600 dark:text-emerald-400 flex items-center">
                 <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -141,15 +141,15 @@
               v-model="address" 
               type="text"
               placeholder="請輸入完整地址"
-              class="w-full px-4 py-3 border-2 border-amber-200 dark:border-amber-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white transition-all"
+              class="w-full px-4 py-3 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white transition-all"
             />
           </div>
         </div>
       </div>
 
       <!-- Confirmation Card -->
-      <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 border-2 border-amber-300 dark:border-amber-600 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s;">
-        <h3 class="text-lg font-bold text-amber-800 dark:text-amber-200 mb-4">請確認資料</h3>
+      <div class="bg-gradient-to-br from-emerald-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 border-2 border-emerald-300 dark:border-emerald-600 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s;">
+        <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-200 mb-4">請確認資料</h3>
         <div class="space-y-2 mb-6">
           <p class="text-gray-700 dark:text-gray-200">
             <span class="font-semibold">姓名：</span>{{userName}}
@@ -162,12 +162,12 @@
           </p>
         </div>
         
-        <label class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
+        <label class="flex items-center p-4 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-gray-600 transition-all">
           <input 
             v-model="confirmed"
             type="checkbox" 
             id="cb_doublecheck"
-            class="w-5 h-5 text-amber-600 focus:ring-amber-500 rounded"
+            class="w-5 h-5 text-emerald-600 focus:ring-emerald-500 rounded"
           />
           <span class="ml-3 text-gray-700 dark:text-gray-200 font-medium">
             ✓ 我確認填寫正確囉！
@@ -181,7 +181,7 @@
           @click="confirmSend" 
           id="btn_confirm" 
           :disabled="!confirmed || !zone_id || !address"
-          class="w-full py-4 px-6 bg-gradient-to-r from-amber-700 to-yellow-600 hover:from-amber-800 hover:to-yellow-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          class="w-full py-4 px-6 bg-gradient-to-r from-emerald-700 to-lime-600 hover:from-emerald-800 hover:to-lime-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
         >
           <span v-if="!send_loading">確認送出 →</span>
           <span v-else class="flex items-center justify-center">

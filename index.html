@@ -51,7 +51,7 @@
     <!-- Theme Toggle Button -->
     <button 
       data-theme-toggle 
-      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-110"
+      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-500 hover:scale-110"
       aria-label="切換深色模式"
     >
       <!-- Sun Icon (深色模式時顯示) -->
@@ -68,7 +68,7 @@
     <div class="container mx-auto px-4 py-8 max-w-2xl">
       <!-- Admin Link -->
       <div class="text-right mb-4">
-        <a href="admin.html" class="text-sm text-gray-500 hover:text-amber-700 dark:text-gray-400 dark:hover:text-amber-400 transition-colors">
+        <a href="admin.html" class="text-sm text-gray-500 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors">
           ⚙️ 管理後台
         </a>
       </div>
@@ -80,10 +80,10 @@
       </div>
       <!-- Message Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
-        <h2 class="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-4">
+        <h2 class="text-2xl font-bold text-emerald-800 dark:text-emerald-200 mb-4">
           Dear Gentle Friends,
         </h2>
-        <pre class="text-amber-900 dark:text-amber-100 border-2 border-dashed border-amber-700 dark:border-amber-400 rounded-lg p-6 text-base whitespace-pre-wrap">{{hello}}</pre>
+        <pre class="text-emerald-900 dark:text-emerald-100 border-2 border-dashed border-emerald-700 dark:border-emerald-400 rounded-lg p-6 text-base whitespace-pre-wrap">{{hello}}</pre>
         <div id="main-image" class="w-full mb-6">
           <img :src="mainSrc" alt="Main" class="w-full h-auto" />
         </div>
@@ -91,7 +91,7 @@
 
       <!-- Search Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s;">
-        <h2 class="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-4">
+        <h2 class="text-2xl font-bold text-emerald-800 dark:text-emerald-200 mb-4">
           查詢之前填過的地址
         </h2>
         <div class="space-y-4">
@@ -105,14 +105,14 @@
               type="text" 
               placeholder="請輸入姓名" 
               @input="enable_button"
-              class="w-full px-4 py-3 border-2 border-amber-200 dark:border-amber-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white transition-all"
+              class="w-full px-4 py-3 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white transition-all"
             />
           </div>
           <button 
             @click="searchUser" 
             id="btn_search" 
             :disabled="!userName"
-            class="w-full py-3 px-6 bg-amber-700 hover:bg-amber-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            class="w-full py-3 px-6 bg-emerald-700 hover:bg-emerald-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
           >
             <span v-if="!search_loading">🔍 搜尋</span>
             <span v-else class="flex items-center justify-center">
@@ -127,7 +127,7 @@
       </div>
 
       <!-- Search Result Card -->
-      <div v-if="search_done" class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 border-2 border-amber-300 dark:border-amber-600 rounded-xl shadow-lg p-6 fade-in">
+      <div v-if="search_done" class="bg-gradient-to-br from-emerald-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 border-2 border-emerald-300 dark:border-emerald-600 rounded-xl shadow-lg p-6 fade-in">
         <div class="mb-4">
           <p class="text-gray-700 dark:text-gray-200 text-lg">
             <span class="font-semibold">郵遞區號：</span>{{zone_id}}
@@ -141,26 +141,26 @@
         </div>
         
         <div class="space-y-3 mt-6">
-          <label v-if="!preventConfirm" class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
+          <label v-if="!preventConfirm" class="flex items-center p-4 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-gray-600 transition-all">
             <input 
               v-model="mdf" 
               :value="false" 
               type="radio" 
               name="add" 
               id="correct"
-              class="w-5 h-5 text-amber-600 focus:ring-amber-500"
+              class="w-5 h-5 text-emerald-600 focus:ring-emerald-500"
             />
             <span class="ml-3 text-gray-700 dark:text-gray-200 font-medium">✓ 確認，我要送出</span>
           </label>
           
-          <label class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
+          <label class="flex items-center p-4 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-gray-600 transition-all">
             <input 
               v-model="mdf" 
               :value="true" 
               type="radio" 
               name="add" 
               id="wrong"
-              class="w-5 h-5 text-amber-600 focus:ring-amber-500"
+              class="w-5 h-5 text-emerald-600 focus:ring-emerald-500"
             />
             <span class="ml-3 text-gray-700 dark:text-gray-200 font-medium">✏️ 我要新增/修改</span>
           </label>
@@ -173,7 +173,7 @@
           @click="gotoNext" 
           id="btn_confirm" 
           :disabled="mdf === null"
-          class="w-full py-4 px-6 bg-gradient-to-r from-amber-700 to-yellow-600 hover:from-amber-800 hover:to-yellow-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          class="w-full py-4 px-6 bg-gradient-to-r from-emerald-700 to-lime-600 hover:from-emerald-800 hover:to-lime-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
         >
           <span v-if="!send_loading">下一步 →</span>
           <span v-else class="flex items-center justify-center">
