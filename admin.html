@@ -156,7 +156,7 @@
                 <div v-else class="h-32 flex items-center justify-center text-gray-400">
                   無圖片
                 </div>
-                <input type="file" @change="handleImageUpload($event, 'header')" accept="image/*" class="hidden" id="header-upload">
+                <input type="file" @change="handleImageUpload($event, 'header')" accept="image/png" class="hidden" id="header-upload">
                 <label for="header-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
@@ -174,7 +174,7 @@
                 <div v-else class="h-32 flex items-center justify-center text-gray-400">
                   無圖片
                 </div>
-                <input type="file" @change="handleImageUpload($event, 'main')" accept="image/*" class="hidden" id="main-upload">
+                <input type="file" @change="handleImageUpload($event, 'main')" accept="image/png" class="hidden" id="main-upload">
                 <label for="main-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
@@ -192,7 +192,7 @@
                 <div v-else class="h-32 flex items-center justify-center text-gray-400">
                   無圖片
                 </div>
-                <input type="file" @change="handleImageUpload($event, 'footer')" accept="image/*" class="hidden" id="footer-upload">
+                <input type="file" @change="handleImageUpload($event, 'footer')" accept="image/png" class="hidden" id="footer-upload">
                 <label for="footer-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
@@ -258,7 +258,7 @@
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">地址清單</h2>
             <button @click="loadAddresses" class="btn btn-secondary text-sm">
-              🔄 重新載入
+              🔄 載入
             </button>
           </div>
 

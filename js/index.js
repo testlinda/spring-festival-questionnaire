@@ -12,13 +12,27 @@ var app = new Vue({
 		send_status: "",
 		send_loading: false,
 		send_done: false,
-		send_ok: false
+		send_ok: false,
+		// Images from config
+		headerSrc: "https://ik.imagekit.io/ccblack/spring-festival/header.png",
+		mainSrc: "https://ik.imagekit.io/ccblack/spring-festival/main.png",
+		footSrc: "https://ik.imagekit.io/ccblack/spring-festival/foot.png",
+		footerRatio: null,
+		search_status: 'ok',
+		preventConfirm: false
     };
   },
   async beforeMount(){
 	  await this.waitForAPI();
 	  await this.getHello();
+	  await this.loadImagesFromConfig();
   },
+	mounted() {
+		this.$nextTick(() => {
+			this.setupFooterSync();
+			this.loadFooterDimensions();
+		});
+	},
   methods: {
 	async waitForAPI() {
 		let attempts = 0;
@@ -42,6 +56,78 @@ var app = new Vue({
 			this.hello = "無法載入訊息";
 		}
     },
+	async loadImagesFromConfig() {
+		if (!window.apiManager) return;
+		try {
+			const res = await window.apiManager.getConfig();
+			if (res && res.status === 'ok' && res.config && res.config.images) {
+				const images = res.config.images;
+				this.headerSrc = (images.header && images.header.url) ? images.header.url : this.headerSrc;
+				this.mainSrc = (images.main && images.main.url) ? images.main.url : this.mainSrc;
+				this.footSrc = (images.footer && images.footer.url) ? images.footer.url : this.footSrc;
+				console.log(`Loaded images: header=${this.headerSrc}, main=${this.mainSrc}, foot=${this.footSrc}`);
+				// Recalculate footer height after image sources potentially changed
+				this.loadFooterDimensions();
+			}
+		} catch (err) {
+			console.error('載入配置圖片失敗:', err);
+		}
+	},
+		setupFooterSync() {
+			const apply = this.applyFooterHeight.bind(this);
+			window.addEventListener('resize', this.debounce(apply, 100));
+			// Fallback initial application
+			setTimeout(apply, 200);
+		},
+		applyFooterHeight() {
+			// Use footer image ratio if available; fallback to header height
+			let heightPx = 0;
+			if (this.footerRatio && this.footerRatio > 0) {
+				const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+				heightPx = Math.round(vw * this.footerRatio);
+				const maxH = Math.round((window.innerHeight || 0) * 0.5);
+				if (maxH > 0) {
+					heightPx = Math.min(heightPx, maxH);
+				}
+				const minH = 80;
+				heightPx = Math.max(heightPx, minH);
+			} else {
+				const headerImg = document.querySelector('#header-image img');
+				if (headerImg) {
+					heightPx = Math.round(headerImg.getBoundingClientRect().height || 0);
+				}
+			}
+			document.documentElement.style.setProperty('--footer-height', heightPx + 'px');
+		},
+		loadFooterDimensions() {
+			if (!this.footSrc) return;
+			const img = new Image();
+			img.onload = () => {
+				if (img.naturalWidth > 0) {
+					this.footerRatio = img.naturalHeight / img.naturalWidth;
+				}
+				this.applyFooterHeight();
+			};
+			img.onerror = () => {
+				this.applyFooterHeight();
+			};
+			img.src = this.footSrc;
+		},
+		debounce(fn, wait) {
+			let t;
+			return (...args) => {
+				clearTimeout(t);
+				t = setTimeout(() => fn(...args), wait);
+			};
+		},
+		triggerFooterRecalc() {
+			this.$nextTick(() => setTimeout(() => this.applyFooterHeight(), 50));
+		},
+		scrollToBottom() {
+			const target = document.documentElement || document.body;
+			const top = target.scrollHeight;
+			window.scrollTo({ top, behavior: 'smooth' });
+		},
     async searchUser() {
 		if (!this.userName.trim()) {
 			return;
@@ -53,9 +139,15 @@ var app = new Vue({
 		
 		try {
 			const data = await window.apiManager.getAddress(this.userName);
-			this.zone_id = data.zone_id || "";
-			this.address = data.address || "";
+			this.search_status = data.status || 'ok';
+			const isOk = this.search_status === 'ok';
+			this.zone_id = isOk ? (data.zone_id || "") : "";
+			this.address = isOk ? (data.address || "") : "";
+			this.preventConfirm = !isOk;
+			// Force user to新增/修改 when not ok
+			this.mdf = isOk ? null : true;
 			this.search_done = true;
+			this.$nextTick(() => this.scrollToBottom());
 		} catch (error) {
 			console.error('Search failed:', error);
 			if (window.apiManager) {
@@ -117,7 +209,7 @@ var app = new Vue({
 		location.href = "result.html";
 	},
 	gotoNext() {
-		if (this.mdf === false) {
+		if (!this.preventConfirm && this.mdf === false) {
 			this.confirmSend();
 		} else if (this.mdf === true) {
 			this.gotoEdit();

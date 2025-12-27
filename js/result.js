@@ -2,12 +2,14 @@ var app = new Vue({
   el: "#app",
   data() {
     return {
-		thankyou: "",		
+		thankyou: "",
+		headerSrc: "https://ik.imagekit.io/ccblack/spring-festival/header.png"
     };
   },
   async beforeMount(){
 	  await this.waitForAPI();
 	  await this.getThankyou();
+	  await this.loadImagesFromConfig();
   },
   methods: {
 	async waitForAPI() {
@@ -15,6 +17,18 @@ var app = new Vue({
 		while (!window.apiManager && attempts < 50) {
 			await new Promise(resolve => setTimeout(resolve, 100));
 			attempts++;
+		}
+	},
+	async loadImagesFromConfig() {
+		if (!window.apiManager) return;
+		try {
+			const res = await window.apiManager.getConfig();
+			if (res && res.status === 'ok' && res.config && res.config.images) {
+				const images = res.config.images;
+				this.headerSrc = (images.header && images.header.url) ? images.header.url : this.headerSrc;
+			}
+		} catch (err) {
+			console.error('載入配置圖片失敗:', err);
 		}
 	},
 	async getThankyou() {

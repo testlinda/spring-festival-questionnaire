@@ -274,9 +274,9 @@ const app = new Vue({
         return;
       }
       
-      // 檢查檔案類型
-      if (!file.type.startsWith('image/')) {
-        this.showToast('請選擇圖片檔案', 'error');
+      // 檢查檔案類型（僅允許 PNG）
+      if (file.type !== 'image/png') {
+        this.showToast('請上傳 PNG 檔（支援透明背景）', 'error');
         return;
       }
       

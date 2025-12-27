@@ -62,11 +62,11 @@
     </button>
     
     <div class="container mx-auto px-4 py-8 max-w-2xl">
-      <!-- Header Image -->
-      <div id="header-image" class="w-full mb-6 rounded-xl overflow-hidden shadow-lg">
-        <img src="https://i.imgur.com/EzmGunF.jpg" alt="Spring Festival" class="w-full h-auto" />
-      </div>
     <div id="app" class="space-y-6">
+      <!-- Header Image -->
+      <div id="header-image" class="w-full mb-6">
+        <img :src="headerSrc" alt="Spring Festival" class="w-full h-auto" />
+      </div>
       <!-- Success Card -->
       <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border-2 border-green-400 dark:border-green-600 rounded-xl shadow-lg p-8 fade-in text-center">
         <div class="mb-6">

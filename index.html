@@ -39,7 +39,7 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
-  <body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+  <body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300" style="padding-bottom: var(--footer-height, 0px);">
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="loading"></div>
@@ -73,17 +73,20 @@
         </a>
       </div>
       
-      <!-- Header Image -->
-      <div id="header-image" class="w-full mb-6 rounded-xl overflow-hidden shadow-lg">
-        <img src="https://i.imgur.com/EzmGunF.jpg" alt="Spring Festival" class="w-full h-auto" />
-      </div>
     <div id="app" class="space-y-6">
+      <!-- Dynamic Images from Config (must be inside #app for Vue bindings) -->
+      <div id="header-image" class="w-full mb-6">
+        <img :src="headerSrc" alt="Header" class="w-full h-auto" />
+      </div>
       <!-- Message Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
         <h2 class="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-4">
-          想說的話寫在這邊<br/>希望能成功顯示出來
+          Dear Gentle Friends,
         </h2>
         <pre class="text-amber-900 dark:text-amber-100 border-2 border-dashed border-amber-700 dark:border-amber-400 rounded-lg p-6 text-base whitespace-pre-wrap">{{hello}}</pre>
+        <div id="main-image" class="w-full mb-6">
+          <img :src="mainSrc" alt="Main" class="w-full h-auto" />
+        </div>
       </div>
 
       <!-- Search Card -->
@@ -132,10 +135,13 @@
           <p class="text-gray-700 dark:text-gray-200 text-lg">
             <span class="font-semibold">地址：</span>{{address}}
           </p>
+          <p v-if="preventConfirm" class="text-sm text-red-700 dark:text-red-300 mt-2">
+            查無完整資料。
+          </p>
         </div>
         
         <div class="space-y-3 mt-6">
-          <label class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
+          <label v-if="!preventConfirm" class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
             <input 
               v-model="mdf" 
               :value="false" 
@@ -189,6 +195,9 @@
           ✗ 送出失敗：{{send_status}}
         </p>
       </div>
+
+      <!-- Footer Background (固定底部背景，Vue 綁定圖片 URL) -->
+      <div id="footer-bg" class="footer-bg" :style="{ backgroundImage: 'url(' + footSrc + ')' }"></div>
     </div>
 	
 	<style>
@@ -206,6 +215,19 @@
 	.fade-in {
 	  animation: fadeIn 0.5s ease-out forwards;
 	}
+	
+  .footer-bg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--footer-height, 0px);
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: 100% auto;
+    pointer-events: none;
+    z-index: -1;
+  }
 	</style>
 
 	<!-- Vue.js -->
