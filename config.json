@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "春節賀卡地址收集系統",
+    "version": "2.0.0",
+    "year": "2025",
+    "description": "Spring Festival Greeting Card Address Collection"
+  },
+  "api": {
+    "baseUrl": "https://script.google.com/macros/s/AKfycbx5Elecbyib_IaLbAdgzq4ALM8QKCeQTrQi0UE8FASPc8DoqToK9DEFT3imRpxg0S1Z8Q/exec",
+    "timeout": 10000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "features": {
+    "darkMode": true,
+    "offline": false,
+    "analytics": false
+  },
+  "ui": {
+    "theme": {
+      "primary": "#92400e",
+      "secondary": "#78350f",
+      "accent": "#d97706",
+      "success": "#065f46",
+      "warning": "#d97706",
+      "error": "#991b1b",
+      "info": "#1e40af"
+    },
+    "animations": {
+      "enabled": true,
+      "duration": 300
+    },
+    "breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px",
+      "wide": "1280px"
+    }
+  },
+  "messages": {
+    "loading": "載入中...",
+    "success": "操作成功！",
+    "error": "發生錯誤，請稍後再試",
+    "networkError": "網路連線失敗，請檢查網路狀態",
+    "invalidInput": "請檢查輸入內容",
+    "thankYou": "感謝您的填寫！"
+  },
+  "validation": {
+    "name": {
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "zoneId": {
+      "pattern": "^[0-9]{3,6}$",
+      "required": true
+    },
+    "address": {
+      "minLength": 5,
+      "maxLength": 200,
+      "required": true
+    }
+  },
+  "storage": {
+    "keys": {
+      "theme": "spring-festival-theme",
+      "lastSubmit": "spring-festival-last-submit"
+    }
+  }
+}

@@ -6,13 +6,7 @@ var app = new Vue({
 		userName: "",
 		address: "",
 		zone_id: "",
-		mdf: true,
-		req: {
-			name: "",
-			address: "",
-			zone_id: "",
-			status: "",
-		},
+		mdf: null,
 		search_loading: false,
 		search_done: false,
 		send_status: "",
@@ -21,122 +15,116 @@ var app = new Vue({
 		send_ok: false
     };
   },
-  beforeMount(){
-	  this.getHello()
+  async beforeMount(){
+	  await this.waitForAPI();
+	  await this.getHello();
   },
   methods: {
-	getHello() {
-		 axios({
-		   method: "get",
-		   url: "https://script.google.com/macros/s/AKfycbz2uriK0JEPFjySOkcJZAWAZb1QQ8E3Ng1tLO6oFfr7b2-K3EdSkxLNtrx9RSdlxemr/exec",
-		   params: { type: "hello" }
-		 })
-		   .then((res) => {
-			 console.log(res);
-			 this.hello = res.data;
-			})
-		   .catch(function (err) {
-			 console.error(err);
-		   });
-		 
+	async waitForAPI() {
+		let attempts = 0;
+		while (!window.apiManager && attempts < 50) {
+			await new Promise(resolve => setTimeout(resolve, 100));
+			attempts++;
+		}
+		if (!window.apiManager) {
+			console.error('API Manager 初始化超時');
+			this.hello = "系統初始化失敗，請重新整理頁面";
+		}
+	},
+	async getHello() {
+		if (!window.apiManager) return;
+		try {
+			const response = await window.apiManager.getMessage('hello');
+			// 提取 message 欄位並處理換行
+			this.hello = response.message || response;
+		} catch (error) {
+			console.error('Failed to load message:', error);
+			this.hello = "無法載入訊息";
+		}
     },
-    searchUser() {
+    async searchUser() {
+		if (!this.userName.trim()) {
+			return;
+		}
+		
 		this.search_loading = true;
 		this.search_done = false;
-		var mydata = JSON.stringify({
-				"name": this.userName,
-				"action": 'get'
-			});
+		this.mdf = null;
 		
-		//console.log(mydata);
-			
-         axios({
-           method: "post",
-           url: "https://script.google.com/macros/s/AKfycbyjXCFLby4IgY615XkgZfmsKyUWlpQiWhK-sbY2eyUbhHcmZzs/exec",
-           data: mydata,
-         })
-           .then((res) => {
-             console.log(res.data);
-			 this.zone_id = res.data.zone_id;
-			 this.address = res.data.address;
-			 this.search_loading = false;
-			 this.search_done = true;
-			})
-           .catch(function (err) {
-             console.error(err);
-           });
+		try {
+			const data = await window.apiManager.getAddress(this.userName);
+			this.zone_id = data.zone_id || "";
+			this.address = data.address || "";
+			this.search_done = true;
+		} catch (error) {
+			console.error('Search failed:', error);
+			if (window.apiManager) {
+				window.apiManager.showToast('查詢失敗，請稍後再試', 'error');
+			}
+		} finally {
+			this.search_loading = false;
+		}
     },
-    confirmSend() {
+    async confirmSend() {
 		this.send_loading = true;
 		this.send_done = false;
-		this.req.name = this.userName;
-		this.req.zone_id = this.zone_id;
-		this.req.address = this.address;
-	  
-		var mydata = JSON.stringify({
-				"name": this.req.name,
-				"zone_id": this.req.zone_id,
-				"address": this.req.address,
-				"action": 'set'
-			});
 		
-		//console.log(mydata);
-         axios({
-           method: "post",
-           url: "https://script.google.com/macros/s/AKfycbyjXCFLby4IgY615XkgZfmsKyUWlpQiWhK-sbY2eyUbhHcmZzs/exec",
-           data: mydata,
-         })
-           .then((res) => {
-			 this.send_status = res.data.status;
-			 this.send_ok = (this.send_status === "ok");
-			 this.send_loading = false;
-			 this.send_done = true;
-           })
-		   .then(() => {
-			   if (this.send_ok) {
-				   this.gotoResult();
-			   }
-		   })
-           .catch(function (err) {
-             console.error(err);
-           });
+		try {
+			const result = await window.apiManager.setAddress(
+				this.userName, 
+				this.zone_id, 
+				this.address
+			);
+			
+			this.send_status = result.status;
+			this.send_ok = (this.send_status === "ok");
+			
+			if (this.send_ok) {
+				this.storeLocalData();
+				setTimeout(() => {
+					this.gotoResult();
+				}, 1000);
+			}
+		} catch (error) {
+			console.error('Send failed:', error);
+			this.send_status = "error";
+			this.send_ok = false;
+			if (window.apiManager) {
+				window.apiManager.showToast('送出失敗，請稍後再試', 'error');
+			}
+		} finally {
+			this.send_loading = false;
+			this.send_done = true;
+		}
     },
 	getLocalData() {
-		  this.hello = localStorage.getItem("hello");
-		  this.userName = localStorage.getItem("userName");
-		  this.address = localStorage.getItem("address");
-		  this.zone_id = localStorage.getItem("zone_id");
+		this.hello = localStorage.getItem("hello");
+		this.userName = localStorage.getItem("userName");
+		this.address = localStorage.getItem("address");
+		this.zone_id = localStorage.getItem("zone_id");
     },
 	storeLocalData() {
-		  localStorage.setItem("hello", this.hello);
-		  localStorage.setItem("userName", this.userName);
-		  localStorage.setItem("address", this.address);
-		  localStorage.setItem("zone_id", this.zone_id);
+		localStorage.setItem("hello", this.hello);
+		localStorage.setItem("userName", this.userName);
+		localStorage.setItem("address", this.address);
+		localStorage.setItem("zone_id", this.zone_id);
     },
 	gotoEdit() {
 		this.storeLocalData();
 		location.href = "edit.html";
 	},
 	gotoResult() {
-		this.storeLocalData();
 		location.href = "result.html";
 	},
 	gotoNext() {
-		if (!this.mdf) {
+		if (this.mdf === false) {
 			this.confirmSend();
-		} else {
+		} else if (this.mdf === true) {
 			this.gotoEdit();
-		}		
+		}
 	},
+	enable_button() {
+		// Vue handles this via :disabled binding
+	}
   },
 });
-
-function enable_button() {
-	if(document.getElementById("input_username").value==="") { 
-		document.getElementById('btn_search').disabled = true; 
-		document.getElementById('btn_confirm').disabled = true;
-	} else { 
-		document.getElementById('btn_search').disabled = false;
-		document.getElementById('btn_confirm').disabled = false;
-	}
-}

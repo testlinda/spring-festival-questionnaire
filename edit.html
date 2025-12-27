@@ -1,143 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spring Festival Questionnaire</title>
+    <meta name="description" content="春節賀卡地址收集系統 - 編輯資料" />
+    <meta name="theme-color" content="#ef4444" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🧧</text></svg>" />
+    <title>編輯資料 - 春節賀卡</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#92400e',
+              secondary: '#78350f',
+              accent: '#d97706',
+              earth: {
+                50: '#fefce8',
+                100: '#fef9c3',
+                200: '#fef08a',
+                300: '#fde047',
+                400: '#facc15',
+                500: '#eab308',
+                600: '#ca8a04',
+                700: '#a16207',
+                800: '#854d0e',
+                900: '#713f12',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/styles.css" />
   </head>
-  <body>
-    <div class="container">
-	  <img src="https://i.imgur.com/EzmGunF.jpg" alt="black bear">
-	</div>
-    <div id="app">
-	  <h2>修改資料</h2>
-	  <p class="edit_box">
-	  姓名：{{userName}}	  
-	  <br/><br/>
-	  郵遞區號(6碼)：
-	  <input id="input_zoneid" v-model="zone_id" type="digit" size="10" maxlength="6"/>
-	  <button @click="getZipCodeManually" id="btn_test">手動查詢</button>
-	  <button @click="getZipCode" id="btn_test">自動查詢</button>
-	  <label v-if="search_loading" style="color:forestgreen;">查詢中...</label>
-	  <label v-if="search_done && search_ok" style="color:forestgreen;">查詢結果：{{zone_id}}</label>
-	  <label v-else-if="search_done && (!search_ok)" style="color:red;">查詢失敗：請確認地址正確</label>
-      <br/><br/>地址：
-	  <input id="input_address" v-model="address" type="text" size="50"/>
-	  </p>
-	  
-	  <p class="address_box">
-	  姓名：{{userName}}
-	  <br/><br/>郵遞區號(6碼)：{{zone_id}}
-	  <br/><br/>地址：{{address}}
-	  <br/><br/>
-	  <input type="checkbox" id="cb_doublecheck" onclick="enable_send()">
-	  <label for="cb_doublecheck">我確認填寫正確囉！</label>
-	  <input name="box1" type="hidden"   value="0" />
-	  </p>
-	  
-      <button @click="confirmSend" id="btn_confirm" disabled>確認送出</button>
-	  <p v-if="send_loading" class="loading">
-		資料送出中
-		<span>.</span>
-		<span>.</span>
-		<span>.</span>
-	  </p>
-	  <p v-if="send_done">
-	  <label v-if="send_ok" style="color:forestgreen;">成功送出</label>
-	  <label v-else="send_ok" style="color:red;">送出失敗：{{send_status}}，請晚點再試一次QQ</label>
-	  </p>
-	  <p class="extend"></p>
+  <body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="loading"></div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- Theme Toggle Button -->
+    <button 
+      data-theme-toggle 
+      class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500 hover:scale-110"
+      aria-label="切換深色模式"
+    >
+      <!-- Sun Icon (深色模式時顯示) -->
+      <svg data-theme-icon="sun" class="w-6 h-6 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+      </svg>
+      
+      <!-- Moon Icon (淺色模式時顯示) -->
+      <svg data-theme-icon="moon" class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+      </svg>
+    </button>
+    
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+      <!-- Header Image -->
+      <div id="header-image" class="w-full mb-6 rounded-xl overflow-hidden shadow-lg">
+        <img src="https://i.imgur.com/EzmGunF.jpg" alt="Spring Festival" class="w-full h-auto" />
+      </div>
+    <div id="app" class="space-y-6">
+      <!-- Edit Form Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+        <h2 class="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-6">
+          修改資料
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- Name Display -->
+          <div class="p-4 bg-amber-50 dark:bg-gray-700 rounded-lg">
+            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">姓名</label>
+            <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{userName}}</p>
+          </div>
+          
+          <!-- Zip Code Input -->
+          <div>
+            <label for="input_zoneid" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              郵遞區號（6碼）
+            </label>
+            <div class="flex gap-2 flex-wrap">
+              <input 
+                id="input_zoneid" 
+                v-model="zone_id" 
+                type="text" 
+                maxlength="6"
+                placeholder="請輸入郵遞區號"
+                class="flex-1 min-w-[200px] px-4 py-3 border-2 border-amber-200 dark:border-amber-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white transition-all"
+              />
+              <button 
+                @click="getZipCodeManually" 
+                class="px-4 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition-all"
+              >
+                🔍 手動查詢
+              </button>
+              <button 
+                @click="getZipCode" 
+                class="px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-all"
+              >
+                ⚡ 自動查詢
+              </button>
+            </div>
+            
+            <!-- Zip Code Status Messages -->
+            <div class="mt-2">
+              <p v-if="search_loading" class="text-amber-600 dark:text-amber-400 flex items-center">
+                <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                查詢中...
+              </p>
+              <p v-if="search_done && search_ok" class="text-green-600 dark:text-green-400">
+                ✓ 查詢結果：{{zone_id}}
+              </p>
+              <p v-if="search_done && !search_ok" class="text-red-600 dark:text-red-400">
+                ✗ 查詢失敗：請確認地址正確
+              </p>
+            </div>
+          </div>
+          
+          <!-- Address Input -->
+          <div>
+            <label for="input_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              地址
+            </label>
+            <input 
+              id="input_address" 
+              v-model="address" 
+              type="text"
+              placeholder="請輸入完整地址"
+              class="w-full px-4 py-3 border-2 border-amber-200 dark:border-amber-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmation Card -->
+      <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700 border-2 border-amber-300 dark:border-amber-600 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s;">
+        <h3 class="text-lg font-bold text-amber-800 dark:text-amber-200 mb-4">請確認資料</h3>
+        <div class="space-y-2 mb-6">
+          <p class="text-gray-700 dark:text-gray-200">
+            <span class="font-semibold">姓名：</span>{{userName}}
+          </p>
+          <p class="text-gray-700 dark:text-gray-200">
+            <span class="font-semibold">郵遞區號（6碼）：</span>{{zone_id}}
+          </p>
+          <p class="text-gray-700 dark:text-gray-200">
+            <span class="font-semibold">地址：</span>{{address}}
+          </p>
+        </div>
+        
+        <label class="flex items-center p-4 border-2 border-amber-200 dark:border-amber-700 rounded-lg cursor-pointer hover:bg-amber-100 dark:hover:bg-gray-600 transition-all">
+          <input 
+            v-model="confirmed"
+            type="checkbox" 
+            id="cb_doublecheck"
+            class="w-5 h-5 text-amber-600 focus:ring-amber-500 rounded"
+          />
+          <span class="ml-3 text-gray-700 dark:text-gray-200 font-medium">
+            ✓ 我確認填寫正確囉！
+          </span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="fade-in" style="animation-delay: 0.2s;">
+        <button 
+          @click="confirmSend" 
+          id="btn_confirm" 
+          :disabled="!confirmed || !zone_id || !address"
+          class="w-full py-4 px-6 bg-gradient-to-r from-amber-700 to-yellow-600 hover:from-amber-800 hover:to-yellow-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+        >
+          <span v-if="!send_loading">確認送出 →</span>
+          <span v-else class="flex items-center justify-center">
+            <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            資料送出中...
+          </span>
+        </button>
+      </div>
+
+      <!-- Status Message -->
+      <div v-if="send_done" class="rounded-lg p-4 fade-in" :class="send_ok ? 'bg-green-100 dark:bg-green-900 border-2 border-green-400' : 'bg-red-100 dark:bg-red-900 border-2 border-red-400'">
+        <p v-if="send_ok" class="text-green-800 dark:text-green-200 font-semibold text-center">
+          ✓ 成功送出
+        </p>
+        <p v-else class="text-red-800 dark:text-red-200 font-semibold text-center">
+          ✗ 送出失敗：{{send_status}}，請晚點再試一次
+        </p>
+      </div>
     </div>
 	
 	<style>
-	.loading { color: tomato;}
-		.loading{
-		  color: #8bbc6d;
-		  font-size: 20px;
-		  animation: dots infinite alternate  .5s
-		}
-		
-		@keyframes dots{
-			from{ opacity: 0; }
-			to{ opacty: 1; }
-		}
+	@keyframes fadeIn {
+	  from {
+	    opacity: 0;
+	    transform: translateY(10px);
+	  }
+	  to {
+	    opacity: 1;
+	    transform: translateY(0);
+	  }
+	}
 	
-	</style>
-	<style>
-	.container {
-	  position: relative;
-	  text-align: left;
-	  color: black;
-	}
-
-	.bottom-left {
-	  position: absolute;
-	  bottom: 8px;
-	  left: 16px;
-	}
-
-	.top-left {
-	  position: absolute;
-	  top: 8px;
-	  left: 16px;
-	}
-
-	.top-right {
-	  position: absolute;
-	  top: 8px;
-	  right: 16px;
-	}
-
-	.bottom-right {
-	  position: absolute;
-	  bottom: 8px;
-	  right: 16px;
-	}
-
-	.centered {
-	  position: absolute;
-	  top: 50%;
-	  left: 50%;
-	  transform: translate(-50%, -50%);
-	}
-	</style>
-	<style>
-	h2 {
-	  color: #688543;
-	  font-size: 24px;
-	}
-	pre.my_dialog {
-	  border: 1px dashed forestgreen; 
-	  border-radius: 5px;
-	  padding-top: 30px;
-	  padding-bottom: 30px;
-	  padding-left: 10px;
-	  padding-right: 10px;
-	}
-	p.edit_box {
-	  color: #272727;
-	  padding-top: 10px;
-	  padding-bottom: 10px;
-	  padding-left: 10px;
-	  padding-right: 10px;
-	}
-	p.address_box {
-	  color: #272727;
-	  border: 1px dashed forestgreen; 
-	  border-radius: 5px;
-	  background-color: #d5e699;
-	  padding-top: 10px;
-	  padding-bottom: 10px;
-	  padding-left: 10px;
-	  padding-right: 10px;
-	}
-	p.extend {
-	  padding-bottom: 200px;
+	.fade-in {
+	  animation: fadeIn 0.5s ease-out forwards;
 	}
 	</style>
 
+	<!-- Vue.js -->
     <script src="./js/vue.js"></script>
+	<!-- Axios -->
     <script src="./js/axios.min.js"></script>
+	<!-- API Manager -->
+	<script src="./js/api.js"></script>
+	<!-- Theme Manager -->
+	<script src="./js/theme.js"></script>
+	<!-- Page Script -->
     <script src="./js/edit.js"></script>
   </body>
 </html>

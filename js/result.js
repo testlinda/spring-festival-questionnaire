@@ -1,41 +1,35 @@
 var app = new Vue({
   el: "#app",
   data() {
-	  this.getLocalData();
     return {
-		thankyou: this.thankyou,		
+		thankyou: "",		
     };
   },
-  beforeMount(){
-	  this.getThankyou();
+  async beforeMount(){
+	  await this.waitForAPI();
+	  await this.getThankyou();
   },
   methods: {
-	  getThankyou() {
-		 axios({
-		   method: "get",
-		   url: "https://script.google.com/macros/s/AKfycbz2uriK0JEPFjySOkcJZAWAZb1QQ8E3Ng1tLO6oFfr7b2-K3EdSkxLNtrx9RSdlxemr/exec",
-		   params: { type: "thankyou" }
-		 })
-		   .then((res) => {
-			 console.log(res);
-			 this.thankyou = res.data;
-			})
-		   .catch(function (err) {
-			 console.error(err);
-		   });
-		 
-    },
-	  getLocalData() {
-		  this.description = localStorage.getItem("description");
-		  this.userName = localStorage.getItem("userName");
-		  this.address = localStorage.getItem("address");
-		  this.zone_id = localStorage.getItem("zone_id");
-    },
-	  storeLocalData() {
-		  localStorage.setItem("description", this.description);
-		  localStorage.setItem("userName", this.userName);
-		  localStorage.setItem("address", this.address);
-		  localStorage.setItem("zone_id", this.zone_id);
+	async waitForAPI() {
+		let attempts = 0;
+		while (!window.apiManager && attempts < 50) {
+			await new Promise(resolve => setTimeout(resolve, 100));
+			attempts++;
+		}
+	},
+	async getThankyou() {
+		if (!window.apiManager) {
+			this.thankyou = "感謝您的填寫！";
+			return;
+		}
+		try {
+			const response = await window.apiManager.getMessage('thankyou');
+			// 提取 message 欄位
+			this.thankyou = response.message || response;
+		} catch (error) {
+			console.error('Failed to load thank you message:', error);
+			this.thankyou = "感謝您的填寫！";
+		}
     },
   },
 });
