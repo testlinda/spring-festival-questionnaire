@@ -3,37 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="春節賀卡地址收集系統 - 管理後台">
+  <meta name="description" content="黑西西🐻賀卡地址收集系統 - 管理後台">
   <meta name="theme-color" content="#92400e">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚙️</text></svg>" />
-  <title>管理後台 - 春節賀卡</title>
+  <title>管理後台 - 黑西西🐻賀卡</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            primary: '#92400e',
-            secondary: '#78350f',
-            accent: '#d97706',
-            earth: {
-              50: '#fefce8',
-              100: '#fef9c3',
-              200: '#fef08a',
-              300: '#fde047',
-              400: '#facc15',
-              500: '#eab308',
-              600: '#ca8a04',
-              700: '#a16207',
-              800: '#854d0e',
-              900: '#713f12',
-            }
-          }
-        }
-      }
+      darkMode: 'class'
     }
   </script>
   
@@ -53,7 +32,7 @@
   <!-- Theme Toggle Button -->
   <button 
     data-theme-toggle 
-    class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary hover:scale-110"
+    class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:scale-110"
     aria-label="切換深色模式"
   >
     <svg data-theme-icon="sun" class="w-6 h-6 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20">
@@ -77,9 +56,10 @@
             圖片管理、訊息管理、系統配置
           </p>
         </div>
-        <div v-if="isAdmin" class="text-right">
+        <!-- <div v-if="isAdmin" class="text-right"> -->
+        <div class="text-right">
           <p class="text-sm text-gray-600 dark:text-gray-400">登入身份</p>
-          <p class="font-semibold text-primary">{{ userEmail }}</p>
+          <p class="font-semibold text-emerald-700 dark:text-emerald-300">{{ userEmail }}</p>
         </div>
       </div>
       
@@ -101,33 +81,34 @@
     </header>
 
     <!-- Tab Navigation -->
-    <div v-if="isAdmin" class="mb-6">
+    <!-- <div v-if="isAdmin" class="mb-6"> -->
+    <div class="mb-6">
       <div class="border-b border-gray-200 dark:border-gray-700">
         <nav class="-mb-px flex space-x-8">
           <button 
             @click="activeTab = 'images'"
-            :class="activeTab === 'images' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+            :class="activeTab === 'images' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           >
             🖼️ 圖片管理
           </button>
           <button 
             @click="activeTab = 'messages'"
-            :class="activeTab === 'messages' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+            :class="activeTab === 'messages' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           >
             💬 訊息管理
           </button>
           <button 
             @click="activeTab = 'addresses'"
-            :class="activeTab === 'addresses' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+            :class="activeTab === 'addresses' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           >
             📮 地址清單
           </button>
           <button 
             @click="activeTab = 'config'"
-            :class="activeTab === 'config' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+            :class="activeTab === 'config' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           >
             ⚙️ 系統配置
@@ -137,7 +118,8 @@
     </div>
 
     <!-- Tab Content -->
-    <div v-if="isAdmin">
+    <!-- <div v-if="isAdmin"> -->
+    <div>
       
       <!-- Images Tab -->
       <div v-show="activeTab === 'images'" class="space-y-6">
@@ -157,7 +139,7 @@
                   無圖片
                 </div>
                 <input type="file" @change="handleImageUpload($event, 'header')" accept="image/png" class="hidden" id="header-upload">
-                <label for="header-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
+                <label for="header-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
               </div>
@@ -175,7 +157,7 @@
                   無圖片
                 </div>
                 <input type="file" @change="handleImageUpload($event, 'main')" accept="image/png" class="hidden" id="main-upload">
-                <label for="main-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
+                <label for="main-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
               </div>
@@ -193,7 +175,7 @@
                   無圖片
                 </div>
                 <input type="file" @change="handleImageUpload($event, 'footer')" accept="image/png" class="hidden" id="footer-upload">
-                <label for="footer-upload" class="btn btn-secondary w-full text-sm cursor-pointer">
+                <label for="footer-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
                   📤 上傳新圖片
                 </label>
               </div>
@@ -226,7 +208,7 @@
               </label>
               <textarea 
                 v-model="messages.hello" 
-                rows="4"
+                rows="10"
                 class="input font-mono text-sm"
                 placeholder="輸入歡迎訊息..."
               ></textarea>
@@ -239,13 +221,13 @@
               </label>
               <textarea 
                 v-model="messages.thankyou" 
-                rows="4"
+                rows="10"
                 class="input font-mono text-sm"
                 placeholder="輸入感謝訊息..."
               ></textarea>
             </div>
 
-            <button @click="saveMessages" class="btn btn-primary">
+            <button @click="saveMessages" class="btn bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800">
               💾 儲存訊息
             </button>
           </div>
@@ -257,7 +239,7 @@
         <div class="card">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">地址清單</h2>
-            <button @click="loadAddresses" class="btn btn-secondary text-sm">
+            <button @click="loadAddresses" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 text-sm border border-emerald-200 dark:border-emerald-700">
               🔄 載入
             </button>
           </div>
@@ -303,25 +285,6 @@
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">系統配置</h2>
           
           <div class="space-y-6">
-            <!-- Theme Config -->
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">主題設定</h3>
-              <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    年份
-                  </label>
-                  <input v-model="config.theme.year" type="text" class="input">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    主題名稱
-                  </label>
-                  <input v-model="config.theme.name" type="text" class="input">
-                </div>
-              </div>
-            </div>
-
             <!-- ImageKit Config -->
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">ImageKit 設定</h3>
@@ -344,7 +307,7 @@
               </div>
             </div>
 
-            <button @click="saveConfig" class="btn btn-primary">
+            <button @click="saveConfig" class="btn bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800">
               💾 儲存配置
             </button>
           </div>
