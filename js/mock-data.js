@@ -1,0 +1,519 @@
+/**
+ * Mock Data for Development & Testing
+ * 模擬數據 - 用於開發與測試，避免消耗 Google Apps Script 配額
+ * 
+ * 使用說明：
+ * 1. 在 config.json 中設定 dev.mockMode = true 啟用模擬模式
+ * 2. 可自由編輯下方常數（INITIAL_ADDRESSES、INITIAL_MESSAGES 等）來測試不同資料
+ * 3. 透過 scenarios 控制各 API 的回應情境（success/error/timeout）
+ * 4. 修改數據只需改一次，reset() 和 mockGetConfig() 會自動引用最新數據
+ */
+
+// ============================================
+// 初始數據常數（修改這裡即可）
+// ============================================
+
+/**
+ * 初始地址數據
+ * 修改此常數，reset() 和初始化都會自動更新
+ */
+const INITIAL_ADDRESSES = [
+  {
+    name: "test",
+    zone_id: "10001",
+    address: "台北市信義區信義路五段7號",
+    timestamp: "2026-01-01T10:30:00.000Z"
+  },
+  {
+    name: "Mary",
+    zone_id: "403",
+    address: "台中市西區模範街8巷23號",
+    timestamp: "2026-01-01T11:15:00.000Z"
+  },
+  {
+    name: "Emily",
+    zone_id: "807031",
+    address: "高雄市三民區寶盛里15鄰大順三路307號",
+    timestamp: "2026-01-01T14:20:00.000Z"
+  },
+  {
+    name: "Sophia",
+    zone_id: "106",
+    address: "台北市大安區基隆路四段43號",
+    timestamp: "2026-01-01T15:45:00.000Z"
+  }
+];
+
+/**
+ * 初始訊息數據
+ * 只支援 'hello' 和 'thankyou' 兩種類型（與後端保持一致）
+ * 修改此常數，mockGetMessage() 會自動引用最新數據
+ */
+const INITIAL_MESSAGES = {
+  hello: {
+    type: "hello",
+    message: `親愛的朋友們，
+
+新年快樂！🎊
+
+又到了一年一度寄送春節賀卡的時候了！
+為了確保賀卡能準確送達到您手中，
+請幫忙確認或更新您的郵寄地址。
+
+謝謝您的配合，祝福您新的一年
+平安順遂、萬事如意！`
+  },
+  thankyou: {
+    type: "thankyou",
+    message: `感謝您提供地址資訊！
+
+您的賀卡將會在春節前寄出，
+請留意信箱。
+
+再次祝福您
+新年快樂、闔家平安！
+
+期待與您分享節日的喜悅 💝`
+  }
+};
+
+/**
+ * 初始配置數據
+ * 修改此常數，mockGetConfig() 會自動引用最新數據
+ * 格式與後端 getDefaultConfig() 保持一致
+ */
+const INITIAL_CONFIG = {
+  images: {
+    header: {
+      url: "https://ik.imagekit.io/ccblack/spring-festival/header.png",
+      alt: "header image",
+      height: "200px"
+    },
+    main: {
+      url: "https://ik.imagekit.io/ccblack/spring-festival/main.png",
+      alt: "black bear",
+      width: "360px",
+      height: "270px"
+    },
+    footer: {
+      url: "https://ik.imagekit.io/ccblack/spring-festival/foot.png",
+      alt: "foot image",
+      height: "200px"
+    }
+  },
+  imagekit: {
+    publicKey: "Hello, I'm the public key.",
+    privateKey: "Hello, I'm the private key.",
+    urlEndpoint: "Hello, I'm the URL endpoint."
+  },
+  messages: {
+    greeting: "新年快樂！",
+    title: "黑西西🐻賀卡地址收集"
+  },
+  features: {
+    enableDarkMode: true,
+    enableOffline: false
+  }
+};
+
+// ============================================
+// MockData 主體
+// ============================================
+
+const MockData = {
+  /**
+   * 模擬地址數據庫
+   * 使用 INITIAL_ADDRESSES 常數初始化
+   */
+  addresses: JSON.parse(JSON.stringify(INITIAL_ADDRESSES)),
+
+  /**
+   * 模擬訊息數據
+   * 使用 INITIAL_MESSAGES 常數初始化
+   */
+  messages: JSON.parse(JSON.stringify(INITIAL_MESSAGES)),
+
+  /**
+   * API 回應場景控制
+   * 設定每個 API 的回應類型：
+   * - "success": 成功回應
+   * - "error": 錯誤回應
+   * - "timeout": 超時（不會回應）
+   * - "notfound": 資料不存在
+   * - "duplicate": 重複資料
+   */
+  scenarios: {
+    getAddress: "success",      // 取得地址
+    setAddress: "success",      // 設定地址
+    listAddresses: "success",   // 列出所有地址（管理員）
+    deleteAddress: "success",   // 刪除地址（管理員）
+    getMessage: "success"       // 取得訊息
+  },
+
+  /**
+   * 管理員密碼（用於測試）
+   */
+  adminPassword: "admin123",
+
+  /**
+   * 取得模擬回應
+   */
+  getMockResponse(action, params = {}, data = null) {
+    const scenario = this.scenarios[action] || "success";
+    
+    console.log(`🎭 Mock API: ${action}`, { scenario, params, data });
+
+    // 處理超時場景
+    if (scenario === "timeout") {
+      return new Promise(() => {}); // 永不 resolve
+    }
+
+    // 處理各種 API action
+    switch (action) {
+      case "getAddress":
+        return this.mockGetAddress(params.name, scenario);
+      
+      case "setAddress":
+        return this.mockSetAddress(data, scenario);
+      
+      case "listAddresses":
+        return this.mockListAddresses(data, scenario);
+      
+      case "deleteAddress":
+        return this.mockDeleteAddress(params.name, data, scenario);
+      
+      case "getMessage":
+        return this.mockGetMessage(params.type, scenario);
+      
+      case "getConfig":
+        return this.mockGetConfig(scenario);
+      
+      case "setConfig":
+        return this.mockSetConfig(data.config, scenario);
+      
+      case "listMessages":
+        return this.mockListMessages(data, scenario);
+      
+      case "checkAdmin":
+        return this.mockCheckAdmin(data, scenario);
+      
+      default:
+        return {
+          status: "error",
+          message: `未知的 API action: ${action}`
+        };
+    }
+  },
+
+  /**
+   * 模擬 getAddress API
+   */
+  mockGetAddress(name, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得地址時發生錯誤"
+      };
+    }
+
+    const address = this.addresses.find(addr => addr.name === name);
+    
+    if (scenario === "notfound" || !address) {
+      return {
+        name: name,
+        zone_id: '',
+        address: '',
+        status: 'not found'
+      };
+    }
+
+    return {
+      name: address.name,
+      zone_id: address.zone_id,
+      address: address.address,
+      last_update: address.timestamp || '',
+      status: 'ok'
+    };
+  },
+
+  /**
+   * 模擬 setAddress API
+   */
+  mockSetAddress(data, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "儲存地址時發生錯誤"
+      };
+    }
+
+    if (scenario === "duplicate") {
+      return {
+        status: "error",
+        message: "此名稱已存在，請使用編輯功能"
+      };
+    }
+
+    // 檢查是否已存在
+    const existingIndex = this.addresses.findIndex(addr => addr.name === data.name);
+    const timestamp = new Date().toISOString();
+    
+    const newAddress = {
+      name: data.name,
+      zone_id: data.zone_id,
+      address: data.address,
+      timestamp: timestamp
+    };
+
+    if (existingIndex >= 0) {
+      // 更新現有地址
+      this.addresses[existingIndex] = newAddress;
+    } else {
+      // 新增地址
+      this.addresses.push(newAddress);
+    }
+
+    console.log('📝 Mock: 地址已儲存', newAddress);
+
+    // 後端回應格式：status='ok'，有 message 和 action 欄位
+    return {
+      status: "ok",
+      message: "地址已儲存",
+      action: existingIndex >= 0 ? "updated" : "created"
+    };
+  },
+
+  /**
+   * 模擬 listAddresses API
+   */
+  mockListAddresses(data, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得地址列表時發生錯誤"
+      };
+    }
+
+    // 驗證密碼
+    if (data.password !== this.adminPassword) {
+      return {
+        status: "error",
+        message: "密碼錯誤"
+      };
+    }
+
+    // 後端回應格式：status='ok'，addresses 字段，count 字段
+    return {
+      status: "ok",
+      addresses: [...this.addresses], // 回傳副本
+      count: this.addresses.length
+    };
+  },
+
+  /**
+   * 模擬 deleteAddress API
+   */
+  mockDeleteAddress(name, data, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "刪除地址時發生錯誤"
+      };
+    }
+
+    // 驗證密碼
+    if (data.password !== this.adminPassword) {
+      return {
+        status: "error",
+        message: "密碼錯誤"
+      };
+    }
+
+    const index = this.addresses.findIndex(addr => addr.name === name);
+    
+    if (index === -1) {
+      return {
+        status: "error",
+        message: "找不到此地址"
+      };
+    }
+
+    // 刪除地址
+    const deleted = this.addresses.splice(index, 1)[0];
+    console.log('🗑️ Mock: 地址已刪除', deleted);
+
+    // 後端回應格式：status='ok'，只有 message 欄位
+    return {
+      status: "ok",
+      message: "地址已刪除"
+    };
+  },
+
+  /**
+   * 模擬 getMessage API
+   */
+  mockGetMessage(type, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得訊息時發生錯誤"
+      };
+    }
+
+    // 支援訊息類型別名（hello ↔ greeting 相互對應）
+    const typeMap = {
+      'hello': 'hello',
+      'greeting': 'hello',  // 別名，對應到 hello
+      'thankyou': 'thankyou'
+    };
+
+    const mappedType = typeMap[type] || type;
+    const messageData = this.messages[mappedType];
+    
+    if (!messageData) {
+      return {
+        status: "error",
+        message: `找不到訊息類型: ${type}`
+      };
+    }
+
+    // 回應格式與後端 API 一致：status='ok'，直接返回 type 和 message
+    return {
+      status: "ok",
+      type: mappedType,
+      message: messageData.message
+    };
+  },
+
+  /**
+   * 模擬 getConfig API
+   * 回應格式與後端一致：status='ok'，config 欄位
+   */
+  mockGetConfig(scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得配置時發生錯誤"
+      };
+    }
+
+    return {
+      status: "ok",
+      config: JSON.parse(JSON.stringify(INITIAL_CONFIG))
+    };
+  },
+
+  /**
+   * 模擬 setConfig API
+   */
+  mockSetConfig(config, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "設定配置時發生錯誤"
+      };
+    }
+
+    console.log('⚙️ Mock: 配置已更新', config);
+
+    return {
+      status: "success",
+      message: "配置已更新"
+    };
+  },
+
+  /**
+   * 模擬 checkAdmin API
+   * 回應格式與後端一致
+   */
+  mockCheckAdmin(data, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "檢查管理員權限時發生錯誤"
+      };
+    }
+
+    const password = data?.password;
+
+    if (!password) {
+      return {
+        status: "ok",
+        isAdmin: false,
+        message: "需要管理員密碼"
+      };
+    }
+
+    // 檢查密碼是否正確
+    const isAdmin = password === this.adminPassword;
+
+    console.log(`🔐 Mock: 檢查管理員權限 - isAdmin: ${isAdmin}`);
+
+    // 回應格式與後端一致
+    return {
+      status: "ok",
+      isAdmin: isAdmin,
+      email: isAdmin ? "admin" : ""
+    };
+  },
+
+  /**
+   * 模擬 listMessages API
+   * 回應格式與後端一致
+   */
+  mockListMessages(data, scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得訊息列表時發生錯誤"
+      };
+    }
+
+    // 驗證密碼
+    if (data?.password !== this.adminPassword) {
+      return {
+        status: "error",
+        message: "密碼錯誤"
+      };
+    }
+
+    // 將訊息對象轉換為陣列格式
+    const messages = Object.keys(this.messages).map(key => ({
+      type: key,
+      message: this.messages[key].message
+    }));
+
+    console.log('📋 Mock: 訊息列表', messages);
+
+    // 回應格式與後端一致：status='ok', messages 陣列
+    return {
+      status: "ok",
+      messages: messages
+    };
+  },
+
+  /**
+   * 重置為初始數據
+   * 直接引用 INITIAL_ADDRESSES 和 INITIAL_MESSAGES 常數
+   * 修改常數後，reset() 會自動使用最新數據
+   */
+  reset() {
+    this.addresses = JSON.parse(JSON.stringify(INITIAL_ADDRESSES));
+    this.messages = JSON.parse(JSON.stringify(INITIAL_MESSAGES));
+    console.log('🔄 Mock Data 已重置為初始狀態');
+  },
+
+  /**
+   * 清空所有地址
+   */
+  clearAddresses() {
+    this.addresses = [];
+    console.log('🗑️ 所有 Mock 地址已清空');
+  }
+};
+
+// 在 console 中提供全域存取
+if (typeof window !== 'undefined') {
+  window.MockData = MockData;
+  console.log('🎭 Mock Data 已載入 - 可透過 window.MockData 存取');
+}

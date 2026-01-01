@@ -159,7 +159,7 @@
         <button 
           @click="confirmSend" 
           id="btn_confirm" 
-          :disabled="!confirmed || !zone_id || !address"
+          :disabled="!confirmed || !zone_id || !address || send_loading || send_lock"
           class="w-full py-4 px-6 bg-gradient-to-r from-emerald-700 to-lime-600 hover:from-emerald-800 hover:to-lime-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
         >
           <span v-if="!send_loading">確認送出 →</span>
@@ -205,10 +205,14 @@
     <script src="./js/vue.js"></script>
 	<!-- Axios -->
     <script src="./js/axios.min.js"></script>
+	<!-- Mock Data (開發用) -->
+	<script src="./js/mock-data.js"></script>
 	<!-- API Manager -->
 	<script src="./js/api.js"></script>
 	<!-- Theme Manager -->
 	<script src="./js/theme.js"></script>
+	<!-- Dev Panel (開發用) -->
+	<script src="./js/dev-panel.js"></script>
 	<!-- Page Script -->
     <script src="./js/edit.js"></script>
   </body>

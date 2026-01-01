@@ -1,8 +1,7 @@
 {
   "app": {
-    "name": "春節賀卡地址收集系統",
+    "name": "黑西西🐻賀卡地址收集系統",
     "version": "2.0.0",
-    "year": "2025",
     "description": "Spring Festival Greeting Card Address Collection"
   },
   "api": {
@@ -10,6 +9,11 @@
     "timeout": 10000,
     "retryAttempts": 3,
     "retryDelay": 1000
+  },
+  "dev": {
+    "mockMode": false,
+    "mockDelay": 500,
+    "showDevPanel": false
   },
   "features": {
     "darkMode": true,

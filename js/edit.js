@@ -10,6 +10,7 @@ var app = new Vue({
 		search_done: false,
 		search_ok: false,
 		send_loading: false,
+		send_lock: false,
 		send_done: false,
 		send_ok: false,
 		send_status: "",
@@ -52,7 +53,7 @@ var app = new Vue({
 		localStorage.setItem("zone_id", this.zone_id);
     },
 	async confirmSend() {
-		if (!this.confirmed || !this.zone_id || !this.address) {
+		if (this.send_loading || this.send_lock || !this.confirmed || !this.zone_id || !this.address) {
 			return;
 		}
 		
@@ -70,6 +71,8 @@ var app = new Vue({
 			this.send_ok = (this.send_status === "ok");
 			
 			if (this.send_ok) {
+				// Keep locked to prevent further clicks until navigation
+				this.send_lock = true;
 				this.storeLocalData();
 				setTimeout(() => {
 					this.gotoResult();
@@ -83,11 +86,17 @@ var app = new Vue({
 				window.apiManager.showToast('送出失敗，請稍後再試', 'error');
 			}
 		} finally {
-			this.send_loading = false;
+			// Only re-enable on failure; remain locked/loading on success until navigation
+			if (!this.send_ok) {
+				this.send_loading = false;
+			}
 			this.send_done = true;
 		}
     },
 	async getZipCode() {
+		if (this.search_loading) {
+			return;
+		}
 		if (!this.address.trim()) {
 			if (window.apiManager) {
 				window.apiManager.showToast('請先輸入地址', 'error');

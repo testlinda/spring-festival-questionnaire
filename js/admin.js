@@ -12,14 +12,10 @@ const app = new Vue({
     userEmail: '',
     
     // Tab
-    activeTab: 'images',
+    activeTab: 'mainpage',
     
     // Config
     config: {
-      theme: {
-        name: '',
-        year: ''
-      },
       images: {
         header: { url: '' },
         main: { url: '' },
@@ -52,12 +48,6 @@ const app = new Vue({
     
     // 檢查管理員權限
     await this.checkAdminStatus();
-    
-    if (this.isAdmin) {
-      // 載入初始資料
-      await this.loadConfig();
-      await this.loadMessages();
-    }
   },
   
   methods: {
@@ -139,7 +129,6 @@ const app = new Vue({
         const result = await window.apiManager.getConfig(password);
         if (result.status === 'ok') {
           this.config = {
-            theme: result.config.theme || { name: '', year: '' },
             images: result.config.images || {},
             imagekit: result.config.imagekit || { publicKey: '', urlEndpoint: '' }
           };
@@ -305,6 +294,38 @@ const app = new Vue({
         this.uploadProgress = null;
         // 清空 input
         event.target.value = '';
+      }
+    },
+
+    /**
+     * 清除指定圖片的 CDN 快取
+     */
+    async purgeImageCache(type) {
+      const imageUrl = this.config.images?.[type]?.url;
+      if (!imageUrl) {
+        this.showToast('目前沒有可清除的圖片 URL', 'warning');
+        return;
+      }
+      
+      if (!confirm('確定要清除這張圖片的 CDN 快取嗎？')) {
+        return;
+      }
+      
+      try {
+        this.uploadProgress = `正在清除 ${type} 圖片快取...`;
+        const password = localStorage.getItem('adminPassword');
+        const result = await window.apiManager.purgeImageCache(type, password, imageUrl);
+        
+        if (result.status === 'ok') {
+          this.showToast('已送出 CDN 清除請求', 'success');
+        } else {
+          this.showToast('清除失敗: ' + result.message, 'error');
+        }
+      } catch (error) {
+        console.error('清除快取失敗:', error);
+        this.showToast('清除快取失敗', 'error');
+      } finally {
+        this.uploadProgress = null;
       }
     },
     

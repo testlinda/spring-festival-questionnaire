@@ -50,14 +50,13 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            🎯 春節賀卡管理後台
+            🌳 黑西西🐻賀卡管理後台
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
             圖片管理、訊息管理、系統配置
           </p>
         </div>
-        <!-- <div v-if="isAdmin" class="text-right"> -->
-        <div class="text-right">
+        <div v-if="isAdmin" class="text-right">
           <p class="text-sm text-gray-600 dark:text-gray-400">登入身份</p>
           <p class="font-semibold text-emerald-700 dark:text-emerald-300">{{ userEmail }}</p>
         </div>
@@ -73,7 +72,7 @@
           </div>
           <div class="ml-3">
             <p class="text-sm text-yellow-700 dark:text-yellow-200">
-              您需要管理員權限才能使用此頁面。請使用已授權的 Google 帳號登入。
+              您需要管理員權限才能使用此頁面。
             </p>
           </div>
         </div>
@@ -81,16 +80,15 @@
     </header>
 
     <!-- Tab Navigation -->
-    <!-- <div v-if="isAdmin" class="mb-6"> -->
-    <div class="mb-6">
+    <div v-if="isAdmin" class="mb-6">
       <div class="border-b border-gray-200 dark:border-gray-700">
         <nav class="-mb-px flex space-x-8">
           <button 
-            @click="activeTab = 'images'"
-            :class="activeTab === 'images' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
+            @click="activeTab = 'mainpage'"
+            :class="activeTab === 'mainpage' ? 'border-emerald-700 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           >
-            🖼️ 圖片管理
+            🐻 首頁
           </button>
           <button 
             @click="activeTab = 'messages'"
@@ -118,88 +116,16 @@
     </div>
 
     <!-- Tab Content -->
-    <!-- <div v-if="isAdmin"> -->
-    <div>
-      
-      <!-- Images Tab -->
-      <div v-show="activeTab === 'images'" class="space-y-6">
-        <div class="card">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">圖片管理</h2>
-          
-          <!-- Current Images -->
-          <div class="grid md:grid-cols-3 gap-6 mb-6">
-            <!-- Header Image -->
-            <div class="space-y-3">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                頂部橫幅 (Header)
-              </label>
-              <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                <img v-if="config.images?.header?.url" :src="config.images.header.url" alt="Header" class="w-full h-auto rounded mb-2">
-                <div v-else class="h-32 flex items-center justify-center text-gray-400">
-                  無圖片
-                </div>
-                <input type="file" @change="handleImageUpload($event, 'header')" accept="image/png" class="hidden" id="header-upload">
-                <label for="header-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
-                  📤 上傳新圖片
-                </label>
-              </div>
-              <p class="text-xs text-gray-500">建議尺寸: 寬度 1200px，比例 4:1</p>
-            </div>
-
-            <!-- Main Image -->
-            <div class="space-y-3">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                主視覺圖 (Main)
-              </label>
-              <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                <img v-if="config.images?.main?.url" :src="config.images.main.url" alt="Main" class="w-full h-auto rounded mb-2">
-                <div v-else class="h-32 flex items-center justify-center text-gray-400">
-                  無圖片
-                </div>
-                <input type="file" @change="handleImageUpload($event, 'main')" accept="image/png" class="hidden" id="main-upload">
-                <label for="main-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
-                  📤 上傳新圖片
-                </label>
-              </div>
-              <p class="text-xs text-gray-500">建議尺寸: 360x270px (4:3)</p>
-            </div>
-
-            <!-- Footer Image -->
-            <div class="space-y-3">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                底部橫幅 (Footer)
-              </label>
-              <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                <img v-if="config.images?.footer?.url" :src="config.images.footer.url" alt="Footer" class="w-full h-auto rounded mb-2">
-                <div v-else class="h-32 flex items-center justify-center text-gray-400">
-                  無圖片
-                </div>
-                <input type="file" @change="handleImageUpload($event, 'footer')" accept="image/png" class="hidden" id="footer-upload">
-                <label for="footer-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
-                  📤 上傳新圖片
-                </label>
-              </div>
-              <p class="text-xs text-gray-500">建議尺寸: 寬度 1200px，比例 4:1</p>
-            </div>
-          </div>
-
-          <!-- Upload Progress -->
-          <div v-if="uploadProgress" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div class="flex items-center">
-              <div class="loading mr-3"></div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-blue-900 dark:text-blue-200">{{ uploadProgress }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div v-if="isAdmin">
       <!-- Messages Tab -->
       <div v-show="activeTab === 'messages'" class="space-y-6">
         <div class="card">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">訊息管理</h2>
-          
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">訊息管理</h2>
+            <button @click="loadMessages" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 text-sm border border-emerald-200 dark:border-emerald-700">
+              🔄 載入
+            </button>
+          </div>
           <div class="space-y-4">
             <!-- Hello Message -->
             <div>
@@ -281,33 +207,115 @@
 
       <!-- Config Tab -->
       <div v-show="activeTab === 'config'" class="space-y-6">
+        <!-- Image Management Card -->
         <div class="card">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">系統配置</h2>
-          
-          <div class="space-y-6">
-            <!-- ImageKit Config -->
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">ImageKit 設定</h3>
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Public Key
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">📸 圖片管理</h2>
+            <button @click="loadConfig" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 text-sm border border-emerald-200 dark:border-emerald-700">
+              🔄 載入
+            </button>
+          </div>
+          <div class="grid md:grid-cols-3 gap-6">
+                <!-- Header Image -->
+                <div class="space-y-3">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    頂部橫幅 (Header)
                   </label>
-                  <input v-model="config.imagekit.publicKey" type="text" class="input font-mono text-sm">
+                  <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                    <img v-if="config.images?.header?.url" :src="config.images.header.url" alt="Header" class="w-full h-auto rounded mb-2">
+                    <div v-else class="h-32 flex items-center justify-center text-gray-400">
+                      無圖片
+                    </div>
+                    <input type="file" @change="handleImageUpload($event, 'header')" accept="image/png" class="hidden" id="header-upload">
+                    <label for="header-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
+                      📤 上傳新圖片
+                    </label>
+                    <button @click="purgeImageCache('header')" class="btn bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:hover:bg-orange-800 w-full text-sm mt-2">
+                      🧹 清除 CDN 快取
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500">建議尺寸: 寬度 1200px，比例 4:1</p>
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    URL Endpoint
+
+                <!-- Main Image -->
+                <div class="space-y-3">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    主視覺圖 (Main)
                   </label>
-                  <input v-model="config.imagekit.urlEndpoint" type="text" class="input font-mono text-sm">
+                  <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                    <img v-if="config.images?.main?.url" :src="config.images.main.url" alt="Main" class="w-full h-auto rounded mb-2">
+                    <div v-else class="h-32 flex items-center justify-center text-gray-400">
+                      無圖片
+                    </div>
+                    <input type="file" @change="handleImageUpload($event, 'main')" accept="image/png" class="hidden" id="main-upload">
+                    <label for="main-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
+                      📤 上傳新圖片
+                    </label>
+                    <button @click="purgeImageCache('main')" class="btn bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:hover:bg-orange-800 w-full text-sm mt-2">
+                      🧹 清除 CDN 快取
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500">建議尺寸: 360x270px (4:3)</p>
                 </div>
-                <p class="text-sm text-gray-500">
-                  ⚠️ Private Key 僅儲存在 Firebase，此處不顯示
-                </p>
+
+                <!-- Footer Image -->
+                <div class="space-y-3">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    底部橫幅 (Footer)
+                  </label>
+                  <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                    <img v-if="config.images?.footer?.url" :src="config.images.footer.url" alt="Footer" class="w-full h-auto rounded mb-2">
+                    <div v-else class="h-32 flex items-center justify-center text-gray-400">
+                      無圖片
+                    </div>
+                    <input type="file" @change="handleImageUpload($event, 'footer')" accept="image/png" class="hidden" id="footer-upload">
+                    <label for="footer-upload" class="btn bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800 w-full text-sm cursor-pointer">
+                      📤 上傳新圖片
+                    </label>
+                    <button @click="purgeImageCache('footer')" class="btn bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:hover:bg-orange-800 w-full text-sm mt-2">
+                      🧹 清除 CDN 快取
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500">建議尺寸: 寬度 1200px，比例 4:1</p>
+                </div>
+              </div>
+
+          <!-- Upload Progress -->
+          <div v-if="uploadProgress" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+            <div class="flex items-center">
+              <div class="loading mr-3"></div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-blue-900 dark:text-blue-200">{{ uploadProgress }}</p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <button @click="saveConfig" class="btn bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800">
+        <!-- ImageKit Settings Card -->
+        <div class="card">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">🔧 ImageKit 設定</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Public Key
+              </label>
+              <input v-model="config.imagekit.publicKey" type="text" class="input font-mono text-sm" placeholder="public_xxxxxxxxxxxxx">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                URL Endpoint
+              </label>
+              <input v-model="config.imagekit.urlEndpoint" type="text" class="input font-mono text-sm" placeholder="https://ik.imagekit.io/your-id">
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 p-4 rounded">
+              <p class="text-sm text-amber-700 dark:text-amber-200">
+                ⚠️ Private Key 僅儲存在 Firebase 後端，基於安全考量此處不顯示
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <button @click="saveConfig" class="btn bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 w-full md:w-auto">
               💾 儲存配置
             </button>
           </div>
@@ -321,10 +329,14 @@
   <script src="./js/vue.js"></script>
   <!-- Axios -->
   <script src="./js/axios.min.js"></script>
+  <!-- Mock Data (開發用) -->
+  <script src="./js/mock-data.js"></script>
   <!-- API Manager -->
   <script src="./js/api.js"></script>
   <!-- Theme Manager -->
   <script src="./js/theme.js"></script>
+  <!-- Dev Panel (開發用) -->
+  <script src="./js/dev-panel.js"></script>
   <!-- Admin Script -->
   <script src="./js/admin.js"></script>
 </body>

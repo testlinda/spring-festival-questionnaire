@@ -129,7 +129,7 @@ var app = new Vue({
 			window.scrollTo({ top, behavior: 'smooth' });
 		},
     async searchUser() {
-		if (!this.userName.trim()) {
+		if (!this.userName.trim() || this.search_loading) {
 			return;
 		}
 		
@@ -158,6 +158,9 @@ var app = new Vue({
 		}
     },
     async confirmSend() {
+		if (this.send_loading) {
+			return;
+		}
 		this.send_loading = true;
 		this.send_done = false;
 		

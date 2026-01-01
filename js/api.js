@@ -22,6 +22,11 @@ class SpringFestivalAPI {
    * @param {Object} options - 額外選項
    */
   async request(action, params = {}, data = null, options = {}) {
+    // 🎭 檢查是否啟用 Mock 模式
+    if (this.config.dev && this.config.dev.mockMode) {
+      return this.mockRequest(action, params, data, options);
+    }
+
     // 解析選項
     const retry = options.retry !== undefined ? options.retry : true;
     const showLoading = options.showLoading !== undefined ? options.showLoading : true;
@@ -307,6 +312,13 @@ class SpringFestivalAPI {
     return this.request('deleteImage', { fileId }, { password }, { method: 'POST' });
   }
 
+  /**
+   * 清除 ImageKit CDN 快取（需要 Admin 權限）
+   */
+  async purgeImageCache(type, password, url = '') {
+    return this.request('purgeImageCache', {}, { type, url, password }, { method: 'POST' });
+  }
+
   // ============================================
   // Auth API
   // ============================================
@@ -330,6 +342,62 @@ class SpringFestivalAPI {
    */
   async logout() {
     return this.request('logout');
+  }
+
+  // ============================================
+  // Mock API Methods
+  // ============================================
+
+  /**
+   * 模擬 API 請求
+   * @param {string} action - API action
+   * @param {Object} params - 查詢參數
+   * @param {Object} data - POST 資料
+   * @param {Object} options - 額外選項
+   */
+  async mockRequest(action, params = {}, data = null, options = {}) {
+    const showLoading = options.showLoading !== undefined ? options.showLoading : true;
+    const delay = this.config.dev.mockDelay || 500;
+
+    console.log(`🎭 Mock API Request: ${action}`, { params, data, options });
+
+    // 顯示 Loading
+    if (showLoading) {
+      this.showLoading();
+    }
+
+    try {
+      // 模擬網路延遲
+      await this.delay(delay);
+
+      // 檢查是否有 MockData
+      if (typeof MockData === 'undefined') {
+        throw new Error('MockData 未載入，請確認已引入 mock-data.js');
+      }
+
+      // 取得模擬回應
+      const result = MockData.getMockResponse(action, params, data);
+
+      console.log(`✅ Mock Response: ${action}`, result);
+
+      // 檢查回應狀態
+      if (result.status === 'error') {
+        throw new Error(result.message || '模擬錯誤');
+      }
+
+      return result;
+
+    } catch (error) {
+      console.error('Mock API Error:', error);
+      this.handleError(error);
+      throw error;
+
+    } finally {
+      // 隱藏 Loading
+      if (showLoading) {
+        this.hideLoading();
+      }
+    }
   }
 }
 
