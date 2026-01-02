@@ -1,6 +1,6 @@
 /**
  * Spring Festival API Manager
- * 統一管理所有 API 呼叫、錯誤處理、Loading 狀態
+ * Centralized management for all API calls, error handling, and loading states
  */
 
 class SpringFestivalAPI {
@@ -12,22 +12,24 @@ class SpringFestivalAPI {
     this.retryDelay = config.api.retryDelay;
     this.requestQueue = [];
     this.isProcessing = false;
+    this.cachedConfig = null;
+    this.cachedMessages = null;
   }
 
   /**
-   * 通用 API 請求方法
+   * Generic API request method
    * @param {string} action - API action
-   * @param {Object} params - 查詢參數
-   * @param {Object} data - POST 資料
-   * @param {Object} options - 額外選項
+   * @param {Object} params - Query parameters
+   * @param {Object} data - POST data
+   * @param {Object} options - Additional options
    */
   async request(action, params = {}, data = null, options = {}) {
-    // 🎭 檢查是否啟用 Mock 模式
+    // Check if Mock mode is enabled
     if (this.config.dev && this.config.dev.mockMode) {
       return this.mockRequest(action, params, data, options);
     }
 
-    // 解析選項
+    // Parse options
     const retry = options.retry !== undefined ? options.retry : true;
     const showLoading = options.showLoading !== undefined ? options.showLoading : true;
     const timeout = options.timeout || this.timeout;
@@ -35,23 +37,23 @@ class SpringFestivalAPI {
 
     console.log(`🔵 API Request: ${method} ${action}`, { params, data, options });
 
-    // 顯示 Loading
+    // Show loading
     if (showLoading) {
       this.showLoading();
     }
 
     try {
-      // 構建 URL
+      // Build URL
       const url = this.buildUrl(action, params);
 
-      // 準備 fetch 選項
+      // Prepare fetch options
       const fetchOptions = {
         method: method
       };
 
-      // POST 請求時添加 headers 和 body
+      // Add headers and body for POST requests
       if (method === 'POST') {
-        // 使用 text/plain 避免觸發 CORS preflight
+        // Use text/plain to avoid CORS preflight
         fetchOptions.headers = {
           'Content-Type': 'text/plain'
         };
@@ -60,19 +62,19 @@ class SpringFestivalAPI {
 
       console.log(`📤 Sending: ${method} ${url}`, fetchOptions);
       
-      // 發送請求
+      // Send request
       const response = await this.fetchWithTimeout(url, fetchOptions, timeout);
 
-      // 檢查回應
+      // Check response
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
 
-      // 檢查 API 回應狀態
+      // Check API response status
       if (result.status === 'error') {
-        throw new Error(result.message || '操作失敗');
+        throw new Error(result.message || 'Operation failed');
       }
 
       return result;
@@ -80,17 +82,17 @@ class SpringFestivalAPI {
     } catch (error) {
       console.error('API Error:', error);
 
-      // 重試機制
+      // Retry mechanism
       if (retry && this.retryAttempts > 0) {
         return this.retryRequest(action, params, data, options);
       }
 
-      // 錯誤處理
+      // Error handling
       this.handleError(error);
       throw error;
 
     } finally {
-      // 隱藏 Loading
+      // Hide loading
       if (showLoading) {
         this.hideLoading();
       }
@@ -98,34 +100,34 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 帶超時的 fetch
+   * Fetch with timeout
    */
   async fetchWithTimeout(url, options, timeout) {
     return Promise.race([
       fetch(url, options),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('請求超時')), timeout)
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
       )
     ]);
   }
 
   /**
-   * 重試請求
+   * Retry request
    */
   async retryRequest(action, params, data, options, attempt = 1) {
     if (attempt > this.retryAttempts) {
       throw new Error('重試次數已達上限');
     }
 
-    console.log(`重試第 ${attempt} 次...`);
+    console.log(`Retrying attempt ${attempt}...`);
     
-    // 延遲後重試
+    // Delay before retry
     await this.delay(this.retryDelay * attempt);
 
     try {
       return await this.request(action, params, data, {
         ...options,
-        retry: false  // 避免無限遞迴
+        retry: false  // Avoid infinite recursion
       });
     } catch (error) {
       return this.retryRequest(action, params, data, options, attempt + 1);
@@ -133,7 +135,7 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 構建完整 URL
+   * Build complete URL
    */
   buildUrl(action, params = {}) {
     const url = new URL(this.baseUrl);
@@ -149,14 +151,14 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 延遲函數
+   * Delay function
    */
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
-   * 錯誤處理
+   * Error handling
    */
   handleError(error) {
     const errorMessage = error.message || this.config.messages.error;
@@ -170,27 +172,27 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 顯示訊息
+   * Show message
    */
   showMessage(message, type = 'info') {
-    // 可以使用 toast 庫或自定義通知
+    // Can use toast library or custom notification
     console.log(`[${type.toUpperCase()}] ${message}`);
     
-    // 觸發自定義事件
+    // Trigger custom event
     window.dispatchEvent(new CustomEvent('api-message', {
       detail: { message, type }
     }));
   }
 
   /**
-   * 顯示 Toast 通知（別名方法）
+   * Show toast notification (alias method)
    */
   showToast(message, type = 'info') {
     this.showMessage(message, type);
   }
 
   /**
-   * 顯示 Loading
+   * Show loading
    */
   showLoading() {
     window.dispatchEvent(new CustomEvent('api-loading', {
@@ -199,7 +201,7 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 隱藏 Loading
+   * Hide loading
    */
   hideLoading() {
     window.dispatchEvent(new CustomEvent('api-loading', {
@@ -212,14 +214,14 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 取得地址
+   * Get address
    */
   async getAddress(name) {
     return this.request('getAddress', { name }, {}, { method: 'POST' });
   }
 
   /**
-   * 設定地址
+   * Set address
    */
   async setAddress(name, zoneId, address) {
     return this.request('setAddress', {}, {
@@ -230,14 +232,14 @@ class SpringFestivalAPI {
   }
 
   /**
-   * 列出所有地址（需要 Admin 權限）
+   * List all addresses (Admin only)
    */
   async listAddresses(password) {
     return this.request('listAddresses', {}, { password }, { method: 'POST' });
   }
 
   /**
-   * 刪除地址（需要 Admin 權限）
+   * Delete address (Admin only)
    */
   async deleteAddress(name, password) {
     return this.request('deleteAddress', { name }, { password }, { method: 'POST' });
@@ -248,24 +250,83 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 取得訊息
+   * Get all messages (public) with cache
+   */
+  async getMessages(options = {}) {
+    const reuseCache = options.reuseCache !== false;
+    const showLoading = options.showLoading !== undefined ? options.showLoading : false;
+    const cacheKey = 'spring-festival-messages-cache';
+    const cacheTtlMs = 60 * 60 * 1000; // 1 hour
+
+    if (reuseCache && this.cachedMessages) {
+      return this.cachedMessages;
+    }
+
+    if (reuseCache) {
+      try {
+        const cachedRaw = localStorage.getItem(cacheKey);
+        if (cachedRaw) {
+          const { data, timestamp } = JSON.parse(cachedRaw);
+          if (timestamp && Date.now() - timestamp < cacheTtlMs) {
+            this.cachedMessages = data;
+            return data;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to read messages cache:', err);
+      }
+    }
+
+    const result = await this.request('getMessages', {}, {}, { method: 'POST', showLoading });
+
+    if (result && result.status === 'ok') {
+      this.cachedMessages = result;
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ data: result, timestamp: Date.now() }));
+      } catch (err) {
+        console.error('Failed to save messages cache:', err);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get message
    */
   async getMessage(type) {
+    const all = await this.getMessages({ reuseCache: true, showLoading: false });
+
+    if (all && all.status === 'ok' && Array.isArray(all.messages)) {
+      const entry = all.messages.find(msg => msg.type === type);
+      if (entry) {
+        return {
+          status: 'ok',
+          type,
+          message: entry.message,
+          last_update: entry.last_update
+        };
+      }
+    }
+
+    // Fallback to single fetch if not found
     return this.request('getMessage', { type }, {}, { method: 'POST', showLoading: false });
   }
 
   /**
-   * 列出所有訊息（需要 Admin 權限）
+   * List all messages (Admin only)
    */
   async listMessages(password) {
     return this.request('listMessages', {}, { password }, { method: 'POST' });
   }
 
   /**
-   * 設定訊息（需要 Admin 權限）
+   * Set message (Admin only)
    */
-  async setMessage(type, content, password) {
-    return this.request('setMessage', {}, { type, content, password });
+  async setMessage(type, message, password) {
+    const result = await this.request('setMessage', {}, { type, message, password });
+    this.clearMessagesCache();
+    return result;
   }
 
   // ============================================
@@ -273,17 +334,92 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 取得配置
+   * Get configuration
    */
   async getConfig() {
-    return this.request('getConfig', {}, {}, { method: 'POST', showLoading: false });
+    // Check memory cache first
+    if (this.cachedConfig) {
+      return this.cachedConfig;
+    }
+    
+    // Check localStorage cache (cross-page sharing)
+    try {
+      const cached = localStorage.getItem('spring-festival-config-cache');
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        const now = Date.now();
+        const cacheAge = now - timestamp;
+        const maxAge = 60 * 60 * 1000; // 1 hour
+        
+        // Cache not expired, use cache
+        if (cacheAge < maxAge) {
+          console.log('✅ Using config cache (cached for ' + Math.floor(cacheAge / 1000) + ' seconds)');
+          this.cachedConfig = data;
+          return data;
+        } else {
+          console.log('⏰ Config cache expired, fetching new data');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to read config cache:', error);
+    }
+    
+    // Fetch config from API
+    const result = await this.request('getConfig', {}, {}, { method: 'POST', showLoading: false });
+    
+    // Cache successful config
+    if (result.status === 'ok') {
+      this.cachedConfig = result;
+      
+      // Save to localStorage (cross-page sharing)
+      try {
+        localStorage.setItem('spring-festival-config-cache', JSON.stringify({
+          data: result,
+          timestamp: Date.now()
+        }));
+        console.log('💾 Config cached to localStorage');
+      } catch (error) {
+        console.error('Failed to save config cache:', error);
+      }
+    }
+    
+    return result;
+  }
+  
+  /**
+   * Clear config cache (call after admin updates config)
+   */
+  clearConfigCache() {
+    this.cachedConfig = null;
+    // Also clear localStorage cache
+    try {
+      localStorage.removeItem('spring-festival-config-cache');
+      console.log('🗑️ Config cache cleared');
+    } catch (error) {
+      console.error('Failed to clear config cache:', error);
+    }
   }
 
   /**
-   * 設定配置（需要 Admin 權限）
+   * Clear messages cache (call after admin updates messages)
+   */
+  clearMessagesCache() {
+    this.cachedMessages = null;
+    try {
+      localStorage.removeItem('spring-festival-messages-cache');
+    } catch (err) {
+      console.error('Failed to clear messages cache:', err);
+    }
+  }
+
+  /**
+   * Set configuration (Admin only)
    */
   async setConfig(config, password) {
-    return this.request('setConfig', {}, { config, password });
+    const result = await this.request('setConfig', {}, { config, password });
+    // Clear cache to get latest config next time
+    this.clearConfigCache();
+    return result;
   }
 
   // ============================================
@@ -291,7 +427,7 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 上傳圖片到 ImageKit
+   * Upload image to ImageKit
    */
   async uploadImage(imageBase64, type, password, title = '', description = '') {
     return this.request('uploadImage', {}, {
@@ -301,19 +437,19 @@ class SpringFestivalAPI {
       title,
       description
     }, {
-      timeout: 30000  // 圖片上傳延長時間
+      timeout: 30000  // Extended timeout for image upload
     });
   }
 
   /**
-   * 刪除圖片（需要 Admin 權限）
+   * Delete image (Admin only)
    */
   async deleteImage(fileId, password) {
     return this.request('deleteImage', { fileId }, { password }, { method: 'POST' });
   }
 
   /**
-   * 清除 ImageKit CDN 快取（需要 Admin 權限）
+   * Purge ImageKit CDN cache (Admin only)
    */
   async purgeImageCache(type, password, url = '') {
     return this.request('purgeImageCache', {}, { type, url, password }, { method: 'POST' });
@@ -324,24 +460,10 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 檢查是否為 Admin
+   * Check if user is admin
    */
   async checkAdmin(password) {
     return this.request('checkAdmin', {}, { password }, { method: 'POST', showLoading: false });
-  }
-
-  /**
-   * 登入（取得 Token）
-   */
-  async login() {
-    return this.request('login');
-  }
-
-  /**
-   * 登出
-   */
-  async logout() {
-    return this.request('logout');
   }
 
   // ============================================
@@ -349,11 +471,11 @@ class SpringFestivalAPI {
   // ============================================
 
   /**
-   * 模擬 API 請求
+   * Mock API request
    * @param {string} action - API action
-   * @param {Object} params - 查詢參數
-   * @param {Object} data - POST 資料
-   * @param {Object} options - 額外選項
+   * @param {Object} params - Query parameters
+   * @param {Object} data - POST data
+   * @param {Object} options - Additional options
    */
   async mockRequest(action, params = {}, data = null, options = {}) {
     const showLoading = options.showLoading !== undefined ? options.showLoading : true;
@@ -361,26 +483,26 @@ class SpringFestivalAPI {
 
     console.log(`🎭 Mock API Request: ${action}`, { params, data, options });
 
-    // 顯示 Loading
+    // Show loading
     if (showLoading) {
       this.showLoading();
     }
 
     try {
-      // 模擬網路延遲
+      // Simulate network delay
       await this.delay(delay);
 
-      // 檢查是否有 MockData
+      // Check if MockData exists
       if (typeof MockData === 'undefined') {
         throw new Error('MockData 未載入，請確認已引入 mock-data.js');
       }
 
-      // 取得模擬回應
+      // Get mock response
       const result = MockData.getMockResponse(action, params, data);
 
       console.log(`✅ Mock Response: ${action}`, result);
 
-      // 檢查回應狀態
+      // Check response status
       if (result.status === 'error') {
         throw new Error(result.message || '模擬錯誤');
       }
@@ -393,7 +515,7 @@ class SpringFestivalAPI {
       throw error;
 
     } finally {
-      // 隱藏 Loading
+      // Hide loading
       if (showLoading) {
         this.hideLoading();
       }
@@ -402,45 +524,61 @@ class SpringFestivalAPI {
 }
 
 // ============================================
-// 全域實例化
+// Global Instantiation
 // ============================================
 
 let apiManager = null;
 
 /**
- * 初始化 API Manager
+ * Initialize API Manager
  */
 async function initAPI() {
   try {
-    // 載入配置
+    // Load configuration
     const response = await fetch('./config.json');
     const config = await response.json();
 
-    // 檢查 API URL
+    // Check API URL
     if (config.api.baseUrl === 'YOUR_WEB_APP_URL_HERE') {
       console.warn('⚠️ 請在 config.json 中設定正確的 API URL');
       return null;
     }
 
-    // 建立 API Manager 實例
+    // Create API Manager instance
     apiManager = new SpringFestivalAPI(config);
     
-    console.log('✅ API Manager 初始化成功');
+    console.log('✅ API Manager initialized successfully');
     return apiManager;
 
   } catch (error) {
-    console.error('❌ API Manager 初始化失敗:', error);
+    console.error('❌ API Manager initialization failed:', error);
     return null;
   }
 }
 
-// 暴露到全域
+// Expose to global scope
 window.apiManager = apiManager;
 window.initAPI = initAPI;
 
-// 自動初始化
+/**
+ * Global waitForAPI utility function
+ * Wait for API Manager initialization to complete
+ */
+window.waitForAPI = async function() {
+  let attempts = 0;
+  while (!window.apiManager && attempts < 50) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  if (!window.apiManager) {
+    console.error('API Manager initialization timeout');
+  }
+  return window.apiManager;
+};
+
+// Auto-initialize
 if (typeof window !== 'undefined') {
-  // 立即初始化，不等待 DOMContentLoaded
+  // Initialize immediately, don't wait for DOMContentLoaded
   initAPI().then(manager => {
     window.apiManager = manager;
   });

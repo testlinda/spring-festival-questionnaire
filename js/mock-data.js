@@ -1,21 +1,21 @@
 /**
  * Mock Data for Development & Testing
- * 模擬數據 - 用於開發與測試，避免消耗 Google Apps Script 配額
+ * Mock data - for development and testing, avoiding consuming Google Apps Script quota
  * 
- * 使用說明：
- * 1. 在 config.json 中設定 dev.mockMode = true 啟用模擬模式
- * 2. 可自由編輯下方常數（INITIAL_ADDRESSES、INITIAL_MESSAGES 等）來測試不同資料
- * 3. 透過 scenarios 控制各 API 的回應情境（success/error/timeout）
- * 4. 修改數據只需改一次，reset() 和 mockGetConfig() 會自動引用最新數據
+ * Usage Instructions:
+ * 1. Set dev.mockMode = true in config.json to enable mock mode
+ * 2. Freely edit the constants below (INITIAL_ADDRESSES, INITIAL_MESSAGES, etc.) to test different data
+ * 3. Use scenarios to control the response scenarios for each API (success/error/timeout)
+ * 4. Only need to modify data once, reset() and mockGetConfig() will automatically reference latest data
  */
 
 // ============================================
-// 初始數據常數（修改這裡即可）
+// Initial Data Constants (edit here)
 // ============================================
 
 /**
- * 初始地址數據
- * 修改此常數，reset() 和初始化都會自動更新
+ * Initial address data
+ * Modify this constant, reset() and initialization will automatically update
  */
 const INITIAL_ADDRESSES = [
   {
@@ -45,9 +45,9 @@ const INITIAL_ADDRESSES = [
 ];
 
 /**
- * 初始訊息數據
- * 只支援 'hello' 和 'thankyou' 兩種類型（與後端保持一致）
- * 修改此常數，mockGetMessage() 會自動引用最新數據
+ * Initial message data
+ * Only supports 'hello' and 'thankyou' types (consistent with backend)
+ * Modify this constant, mockGetMessage() will automatically reference latest data
  */
 const INITIAL_MESSAGES = {
   hello: {
@@ -78,9 +78,9 @@ const INITIAL_MESSAGES = {
 };
 
 /**
- * 初始配置數據
- * 修改此常數，mockGetConfig() 會自動引用最新數據
- * 格式與後端 getDefaultConfig() 保持一致
+ * Initial configuration data
+ * Modify this constant, mockGetConfig() will automatically reference latest data
+ * Format consistent with backend getDefaultConfig()
  */
 const INITIAL_CONFIG = {
   images: {
@@ -117,58 +117,59 @@ const INITIAL_CONFIG = {
 };
 
 // ============================================
-// MockData 主體
+// MockData Body
 // ============================================
 
 const MockData = {
   /**
-   * 模擬地址數據庫
-   * 使用 INITIAL_ADDRESSES 常數初始化
+   * Mock address database
+   * Initialize using INITIAL_ADDRESSES constant
    */
   addresses: JSON.parse(JSON.stringify(INITIAL_ADDRESSES)),
 
   /**
-   * 模擬訊息數據
-   * 使用 INITIAL_MESSAGES 常數初始化
+   * Mock message data
+   * Initialize using INITIAL_MESSAGES constant
    */
   messages: JSON.parse(JSON.stringify(INITIAL_MESSAGES)),
 
   /**
-   * API 回應場景控制
-   * 設定每個 API 的回應類型：
-   * - "success": 成功回應
-   * - "error": 錯誤回應
-   * - "timeout": 超時（不會回應）
-   * - "notfound": 資料不存在
-   * - "duplicate": 重複資料
+   * API response scenario control
+   * Set the response type for each API:
+   * - "success": successful response
+   * - "error": error response
+   * - "timeout": timeout (no response)
+   * - "notfound": data not found
+   * - "duplicate": duplicate data
    */
   scenarios: {
-    getAddress: "success",      // 取得地址
-    setAddress: "success",      // 設定地址
-    listAddresses: "success",   // 列出所有地址（管理員）
-    deleteAddress: "success",   // 刪除地址（管理員）
-    getMessage: "success"       // 取得訊息
+    getAddress: "success",      // Get address
+    setAddress: "success",      // Set address
+    listAddresses: "success",   // List all addresses (admin)
+    deleteAddress: "success",   // Delete address (admin)
+    getMessage: "success",      // Get message
+    getMessages: "success"      // Get all messages (public)
   },
 
   /**
-   * 管理員密碼（用於測試）
+   * Admin password (for testing)
    */
   adminPassword: "admin123",
 
   /**
-   * 取得模擬回應
+   * Get mock response
    */
   getMockResponse(action, params = {}, data = null) {
     const scenario = this.scenarios[action] || "success";
     
     console.log(`🎭 Mock API: ${action}`, { scenario, params, data });
 
-    // 處理超時場景
+    // Handle timeout scenario
     if (scenario === "timeout") {
-      return new Promise(() => {}); // 永不 resolve
+      return new Promise(() => {}); // Never resolve
     }
 
-    // 處理各種 API action
+    // Handle various API actions
     switch (action) {
       case "getAddress":
         return this.mockGetAddress(params.name, scenario);
@@ -184,6 +185,9 @@ const MockData = {
       
       case "getMessage":
         return this.mockGetMessage(params.type, scenario);
+
+      case "getMessages":
+        return this.mockGetMessages(scenario);
       
       case "getConfig":
         return this.mockGetConfig(scenario);
@@ -203,6 +207,28 @@ const MockData = {
           message: `未知的 API action: ${action}`
         };
     }
+  },
+
+  /**
+   * 模擬 getMessages (public)
+   */
+  mockGetMessages(scenario) {
+    if (scenario === "error") {
+      return {
+        status: "error",
+        message: "取得訊息時發生錯誤"
+      };
+    }
+
+    const messages = Object.keys(this.messages).map(key => ({
+      type: key,
+      message: this.messages[key].message
+    }));
+
+    return {
+      status: "ok",
+      messages
+    };
   },
 
   /**
@@ -273,7 +299,7 @@ const MockData = {
       this.addresses.push(newAddress);
     }
 
-    console.log('📝 Mock: 地址已儲存', newAddress);
+    console.log('📝 Mock: Address saved', newAddress);
 
     // 後端回應格式：status='ok'，有 message 和 action 欄位
     return {
@@ -294,7 +320,7 @@ const MockData = {
       };
     }
 
-    // 驗證密碼
+    // Validate password
     if (data.password !== this.adminPassword) {
       return {
         status: "error",
@@ -302,10 +328,10 @@ const MockData = {
       };
     }
 
-    // 後端回應格式：status='ok'，addresses 字段，count 字段
+    // Backend response format: status='ok', addresses field, count field
     return {
       status: "ok",
-      addresses: [...this.addresses], // 回傳副本
+      addresses: [...this.addresses], // Return copy
       count: this.addresses.length
     };
   },
@@ -340,7 +366,7 @@ const MockData = {
 
     // 刪除地址
     const deleted = this.addresses.splice(index, 1)[0];
-    console.log('🗑️ Mock: 地址已刪除', deleted);
+    console.log('🗑️ Mock: Address deleted', deleted);
 
     // 後端回應格式：status='ok'，只有 message 欄位
     return {
@@ -414,7 +440,7 @@ const MockData = {
       };
     }
 
-    console.log('⚙️ Mock: 配置已更新', config);
+    console.log('⚙️ Mock: Configuration updated', config);
 
     return {
       status: "success",
@@ -447,7 +473,7 @@ const MockData = {
     // 檢查密碼是否正確
     const isAdmin = password === this.adminPassword;
 
-    console.log(`🔐 Mock: 檢查管理員權限 - isAdmin: ${isAdmin}`);
+    console.log(`🔐 Mock: Check admin permission - isAdmin: ${isAdmin}`);
 
     // 回應格式與後端一致
     return {
@@ -483,7 +509,7 @@ const MockData = {
       message: this.messages[key].message
     }));
 
-    console.log('📋 Mock: 訊息列表', messages);
+    console.log('📋 Mock: Messages list', messages);
 
     // 回應格式與後端一致：status='ok', messages 陣列
     return {
@@ -500,7 +526,7 @@ const MockData = {
   reset() {
     this.addresses = JSON.parse(JSON.stringify(INITIAL_ADDRESSES));
     this.messages = JSON.parse(JSON.stringify(INITIAL_MESSAGES));
-    console.log('🔄 Mock Data 已重置為初始狀態');
+    console.log('🔄 Mock Data reset to initial state');
   },
 
   /**
@@ -508,12 +534,12 @@ const MockData = {
    */
   clearAddresses() {
     this.addresses = [];
-    console.log('🗑️ 所有 Mock 地址已清空');
+    console.log('🗑️ All Mock addresses cleared');
   }
 };
 
 // 在 console 中提供全域存取
 if (typeof window !== 'undefined') {
   window.MockData = MockData;
-  console.log('🎭 Mock Data 已載入 - 可透過 window.MockData 存取');
+  console.log('🎭 Mock Data loaded - accessible via window.MockData');
 }

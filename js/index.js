@@ -23,8 +23,8 @@ var app = new Vue({
     };
   },
   async beforeMount(){
-	  await this.waitForAPI();
-	  await this.getHello();
+	  await window.waitForAPI();
+	  await this.loadMessages();
 	  await this.loadImagesFromConfig();
   },
 	mounted() {
@@ -34,25 +34,15 @@ var app = new Vue({
 		});
 	},
   methods: {
-	async waitForAPI() {
-		let attempts = 0;
-		while (!window.apiManager && attempts < 50) {
-			await new Promise(resolve => setTimeout(resolve, 100));
-			attempts++;
-		}
-		if (!window.apiManager) {
-			console.error('API Manager 初始化超時');
-			this.hello = "系統初始化失敗，請重新整理頁面";
-		}
-	},
-	async getHello() {
+
+	async loadMessages() {
 		if (!window.apiManager) return;
 		try {
-			const response = await window.apiManager.getMessage('hello');
-			// 提取 message 欄位並處理換行
-			this.hello = response.message || response;
+			const res = await window.apiManager.getMessages();
+			const helloEntry = (res && res.messages) ? res.messages.find(m => m.type === 'hello') : null;
+			this.hello = (helloEntry && helloEntry.message) ? helloEntry.message : "";
 		} catch (error) {
-			console.error('Failed to load message:', error);
+			console.error('Failed to load messages:', error);
 			this.hello = "無法載入訊息";
 		}
     },
@@ -193,16 +183,25 @@ var app = new Vue({
 		}
     },
 	getLocalData() {
-		this.hello = localStorage.getItem("hello");
-		this.userName = localStorage.getItem("userName");
-		this.address = localStorage.getItem("address");
-		this.zone_id = localStorage.getItem("zone_id");
+		try {
+			const data = JSON.parse(localStorage.getItem('spring-festival-data') || '{}');
+			this.hello = data.hello || '';
+			this.userName = data.userName || '';
+			this.address = data.address || '';
+			this.zone_id = data.zone_id || '';
+		} catch (error) {
+			console.error('Failed to load local data:', error);
+		}
     },
 	storeLocalData() {
-		localStorage.setItem("hello", this.hello);
-		localStorage.setItem("userName", this.userName);
-		localStorage.setItem("address", this.address);
-		localStorage.setItem("zone_id", this.zone_id);
+		const data = {
+			hello: this.hello,
+			userName: this.userName,
+			address: this.address,
+			zone_id: this.zone_id,
+			timestamp: Date.now()
+		};
+		localStorage.setItem('spring-festival-data', JSON.stringify(data));
     },
 	gotoEdit() {
 		this.storeLocalData();
@@ -217,9 +216,6 @@ var app = new Vue({
 		} else if (this.mdf === true) {
 			this.gotoEdit();
 		}
-	},
-	enable_button() {
-		// Vue handles this via :disabled binding
 	}
   },
 });

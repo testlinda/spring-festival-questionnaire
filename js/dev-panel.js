@@ -1,6 +1,6 @@
 /**
  * Developer Panel
- * 開發者控制面板 - 用於控制 Mock 模式和查看測試數據
+ * Developer control panel - for controlling Mock mode and viewing test data
  */
 
 class DevPanel {
@@ -12,19 +12,19 @@ class DevPanel {
   }
 
   async init() {
-    // 等待配置載入
+    // Wait for config to load
     await this.waitForConfig();
     
-    // 只在啟用 showDevPanel 時顯示
+    // Only show when showDevPanel is enabled
     if (this.config?.dev?.showDevPanel) {
       this.createPanel();
       this.attachEventListeners();
-      console.log('🛠️ Dev Panel 已啟用');
+      console.log('🛠️ Dev Panel enabled');
     }
   }
 
   async waitForConfig() {
-    // 等待 apiManager 初始化
+    // Wait for apiManager to initialize
     let attempts = 0;
     while (!window.apiManager && attempts < 50) {
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -322,11 +322,11 @@ class DevPanel {
     document.body.appendChild(panel);
     this.panel = panel;
 
-    // 初始化場景選擇器
+    // Initialize scenario selectors
     this.renderScenarios();
     this.updateStats();
 
-    // 使面板可拖動
+    // Make panel draggable
     this.makeDraggable();
   }
 
@@ -367,12 +367,12 @@ class DevPanel {
   }
 
   attachEventListeners() {
-    // 關閉按鈕
+    // Close button
     document.getElementById('dev-panel-close')?.addEventListener('click', () => {
       this.panel.remove();
     });
 
-    // 最小化按鈕
+    // Minimize button
     const minimizeBtn = document.getElementById('dev-panel-minimize');
     const toggleMinimize = () => {
       this.isMinimized = !this.isMinimized;
@@ -386,7 +386,7 @@ class DevPanel {
       toggleMinimize();
     });
 
-    // 點擊標題欄也能展開（僅在最小化時）
+    // Click title bar to expand (only when minimized)
     document.getElementById('dev-panel-header')?.addEventListener('click', () => {
       if (this.isMinimized) {
         toggleMinimize();
@@ -398,25 +398,25 @@ class DevPanel {
       this.toggleMockMode();
     });
 
-    // 場景選擇
+    // Scenario selection
     document.querySelectorAll('.dev-scenario-select').forEach(select => {
       select.addEventListener('change', (e) => {
         const action = e.target.dataset.action;
         const scenario = e.target.value;
         if (window.MockData) {
           MockData.scenarios[action] = scenario;
-          console.log(`🎭 場景已更新: ${action} = ${scenario}`);
+          console.log(`🎭 Scenario updated: ${action} = ${scenario}`);
         }
       });
     });
 
-    // 查看 Mock 數據
+    // View Mock Data
     document.getElementById('view-mock-data')?.addEventListener('click', () => {
       console.log('📊 Mock Data:', window.MockData);
       alert('Mock 數據已輸出到 Console (按 F12 查看)');
     });
 
-    // 重置 Mock 數據
+    // Reset Mock Data
     document.getElementById('reset-mock-data')?.addEventListener('click', () => {
       if (window.MockData && confirm('確定要重置 Mock 數據嗎？')) {
         MockData.reset();
@@ -425,7 +425,7 @@ class DevPanel {
       }
     });
 
-    // 清空地址
+    // Clear addresses
     document.getElementById('clear-addresses')?.addEventListener('click', () => {
       if (window.MockData && confirm('確定要清空所有地址嗎？')) {
         MockData.clearAddresses();
@@ -490,7 +490,7 @@ class DevPanel {
   }
 }
 
-// 自動初始化
+// Auto initialize
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     window.devPanel = new DevPanel();

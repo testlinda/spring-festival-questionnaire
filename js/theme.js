@@ -1,6 +1,6 @@
 /**
  * Spring Festival Theme Manager
- * 深色模式管理、本地儲存、自動偵測系統主題
+ * Dark mode management, local storage, automatic system theme detection
  */
 
 class ThemeManager {
@@ -14,81 +14,81 @@ class ThemeManager {
   }
 
   /**
-   * 初始化主題系統
+   * Initialize theme system
    */
   init() {
-    // 載入已儲存的主題偏好
+    // Load saved theme preference
     const savedTheme = this.loadTheme();
     
     if (savedTheme) {
-      // 使用已儲存的主題
+      // Use saved theme
       this.setTheme(savedTheme, false);
     } else {
-      // 使用系統主題
+      // Use system theme
       this.setTheme(this.getSystemTheme(), false);
     }
 
-    // 監聽系統主題變化
+    // Listen for system theme changes
     this.mediaQuery.addEventListener('change', (e) => {
-      // 只在沒有用戶偏好時才自動切換
+      // Auto switch only when no user preference
       if (!this.loadTheme()) {
         this.setTheme(e.matches ? 'dark' : 'light', false);
       }
     });
 
-    console.log('✅ Theme Manager 初始化成功');
+    console.log('✅ Theme Manager initialized successfully');
   }
 
   /**
-   * 取得系統主題
+   * Get system theme
    */
   getSystemTheme() {
     return this.mediaQuery.matches ? 'dark' : 'light';
   }
 
   /**
-   * 取得當前主題
+   * Get current theme
    */
   getCurrentTheme() {
     return this.currentTheme || this.getSystemTheme();
   }
 
   /**
-   * 設定主題
-   * @param {string} theme - 'light' 或 'dark'
-   * @param {boolean} save - 是否儲存到 localStorage
+   * Set theme
+   * @param {string} theme - 'light' or 'dark'
+   * @param {boolean} save - Whether to save to localStorage
    */
   setTheme(theme, save = true) {
     const validTheme = theme === 'dark' ? 'dark' : 'light';
     
-    // 更新 HTML class
+    // Update HTML class
     if (validTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
 
-    // 更新當前主題
+    // Update current theme
     this.currentTheme = validTheme;
 
-    // 儲存偏好
+    // Save preference
     if (save) {
       this.saveTheme(validTheme);
     }
 
-    // 觸發主題變更事件
+    // Trigger theme change event
     window.dispatchEvent(new CustomEvent('theme-changed', {
       detail: { theme: validTheme }
     }));
 
-    // 更新主題切換按鈕圖示
+    // Update toggle button icon
     this.updateToggleButton();
 
-    console.log(`主題已切換為: ${validTheme}`);
+    console.log(`Theme switched to: ${validTheme}`);
   }
 
   /**
-   * 切換主題
+   * Toggle theme
    */
   toggle() {
     const newTheme = this.getCurrentTheme() === 'dark' ? 'light' : 'dark';
@@ -96,50 +96,50 @@ class ThemeManager {
   }
 
   /**
-   * 儲存主題偏好到 localStorage
+   * Save theme preference to localStorage
    */
   saveTheme(theme) {
     try {
       localStorage.setItem(this.storageKey, theme);
     } catch (error) {
-      console.error('無法儲存主題偏好:', error);
+      console.error('Failed to save theme preference:', error);
     }
   }
 
   /**
-   * 從 localStorage 載入主題偏好
+   * Load theme preference from localStorage
    */
   loadTheme() {
     try {
       return localStorage.getItem(this.storageKey);
     } catch (error) {
-      console.error('無法載入主題偏好:', error);
+      console.error('Failed to load theme preference:', error);
       return null;
     }
   }
 
   /**
-   * 清除已儲存的主題偏好
+   * Clear saved theme preference
    */
   clearTheme() {
     try {
       localStorage.removeItem(this.storageKey);
-      // 恢復使用系統主題
+      // Restore to system theme
       this.setTheme(this.getSystemTheme(), false);
     } catch (error) {
-      console.error('無法清除主題偏好:', error);
+      console.error('Failed to clear theme preference:', error);
     }
   }
 
   /**
-   * 更新主題切換按鈕
+   * Update theme toggle button
    */
   updateToggleButton() {
     const toggleButtons = document.querySelectorAll('[data-theme-toggle]');
     const isDark = this.getCurrentTheme() === 'dark';
 
     toggleButtons.forEach(button => {
-      // 更新按鈕圖示
+      // Update button icon
       const sunIcon = button.querySelector('[data-theme-icon="sun"]');
       const moonIcon = button.querySelector('[data-theme-icon="moon"]');
 
@@ -153,7 +153,7 @@ class ThemeManager {
         }
       }
 
-      // 更新 aria-label
+      // Update aria-label
       button.setAttribute('aria-label', 
         isDark ? '切換至淺色模式' : '切換至深色模式'
       );
@@ -161,7 +161,7 @@ class ThemeManager {
   }
 
   /**
-   * 建立主題切換按鈕
+   * Create theme toggle button
    */
   createToggleButton() {
     const button = document.createElement('button');
@@ -196,70 +196,70 @@ class ThemeManager {
   }
 
   /**
-   * 自動插入主題切換按鈕
+   * Auto insert theme toggle button
    */
   insertToggleButton() {
-    // 檢查是否已存在按鈕
+    // Check if button already exists
     const existingButton = document.querySelector('[data-theme-toggle]');
     
     if (existingButton) {
-      // 如果按鈕已存在，綁定點擊事件
+      // If button exists, bind click event
       existingButton.addEventListener('click', (e) => {
         e.preventDefault();
         this.toggle();
       });
-      // 初始化按鈕狀態
+      // Initialize button state
       this.updateToggleButton();
-      console.log('主題切換按鈕已綁定');
+      console.log('Theme toggle button bound');
       return;
     }
 
-    // 如果不存在，建立並插入按鈕
+    // If not exists, create and insert button
     const button = this.createToggleButton();
     document.body.appendChild(button);
 
-    // 初始化按鈕狀態
+    // Initialize button state
     this.updateToggleButton();
-    console.log('主題切換按鈕已創建');
+    console.log('Theme toggle button created');
   }
 }
 
 // ============================================
-// 全域實例化
+// Global Instance
 // ============================================
 
 let themeManager = null;
 
 /**
- * 初始化 Theme Manager
+ * Initialize Theme Manager
  */
 async function initTheme() {
   try {
-    // 載入配置
+    // Load config
     const response = await fetch('./config.json');
     const config = await response.json();
 
-    // 檢查是否啟用深色模式
+    // Check if dark mode is enabled
     if (!config.features.darkMode) {
-      console.log('深色模式已停用');
+      console.log('Dark mode disabled');
       return null;
     }
 
-    // 建立 Theme Manager 實例
+    // Create Theme Manager instance
     themeManager = new ThemeManager(config);
     
-    // 自動插入主題切換按鈕
+    // Auto insert theme toggle button
     themeManager.insertToggleButton();
 
     return themeManager;
 
   } catch (error) {
-    console.error('❌ Theme Manager 初始化失敗:', error);
+    console.error('❌ Theme Manager initialization failed:', error);
     return null;
   }
 }
 
-// 自動初始化
+// Auto initialize
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     initTheme();

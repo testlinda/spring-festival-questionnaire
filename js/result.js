@@ -7,18 +7,11 @@ var app = new Vue({
     };
   },
   async beforeMount(){
-	  await this.waitForAPI();
-	  await this.getThankyou();
+	  await window.waitForAPI();
+	  await this.loadMessages();
 	  await this.loadImagesFromConfig();
   },
   methods: {
-	async waitForAPI() {
-		let attempts = 0;
-		while (!window.apiManager && attempts < 50) {
-			await new Promise(resolve => setTimeout(resolve, 100));
-			attempts++;
-		}
-	},
 	async loadImagesFromConfig() {
 		if (!window.apiManager) return;
 		try {
@@ -28,18 +21,18 @@ var app = new Vue({
 				this.headerSrc = (images.header && images.header.url) ? images.header.url : this.headerSrc;
 			}
 		} catch (err) {
-			console.error('載入配置圖片失敗:', err);
+			console.error('Failed to load config images:', err);
 		}
 	},
-	async getThankyou() {
+	async loadMessages() {
 		if (!window.apiManager) {
 			this.thankyou = "感謝您的填寫！";
 			return;
 		}
 		try {
-			const response = await window.apiManager.getMessage('thankyou');
-			// 提取 message 欄位
-			this.thankyou = response.message || response;
+			const res = await window.apiManager.getMessages();
+			const thankyouEntry = (res && res.messages) ? res.messages.find(m => m.type === 'thankyou') : null;
+			this.thankyou = (thankyouEntry && thankyouEntry.message) ? thankyouEntry.message : "感謝您的填寫！";
 		} catch (error) {
 			console.error('Failed to load thank you message:', error);
 			this.thankyou = "感謝您的填寫！";

@@ -18,18 +18,11 @@ var app = new Vue({
     };
   },
   async beforeMount(){
-	  await this.waitForAPI();
+	  await window.waitForAPI();
 	  this.getLocalData();
 	  await this.loadImagesFromConfig();
   },
   methods: {
-	async waitForAPI() {
-		let attempts = 0;
-		while (!window.apiManager && attempts < 50) {
-			await new Promise(resolve => setTimeout(resolve, 100));
-			attempts++;
-		}
-	},
 	async loadImagesFromConfig() {
 		if (!window.apiManager) return;
 		try {
@@ -39,18 +32,27 @@ var app = new Vue({
 				this.headerSrc = (images.header && images.header.url) ? images.header.url : this.headerSrc;
 			}
 		} catch (err) {
-			console.error('載入配置圖片失敗:', err);
+			console.error('Failed to load config images:', err);
 		}
 	},
 	getLocalData() {
-		this.userName = localStorage.getItem("userName") || "";
-		this.address = localStorage.getItem("address") || "";
-		this.zone_id = localStorage.getItem("zone_id") || "";
+		try {
+			const data = JSON.parse(localStorage.getItem('spring-festival-data') || '{}');
+			this.userName = data.userName || '';
+			this.address = data.address || '';
+			this.zone_id = data.zone_id || '';
+		} catch (error) {
+			console.error('Failed to load local data:', error);
+		}
     },
 	storeLocalData() {
-		localStorage.setItem("userName", this.userName);
-		localStorage.setItem("address", this.address);
-		localStorage.setItem("zone_id", this.zone_id);
+		const data = {
+			userName: this.userName,
+			address: this.address,
+			zone_id: this.zone_id,
+			timestamp: Date.now()
+		};
+		localStorage.setItem('spring-festival-data', JSON.stringify(data));
     },
 	async confirmSend() {
 		if (this.send_loading || this.send_lock || !this.confirmed || !this.zone_id || !this.address) {
@@ -116,7 +118,7 @@ var app = new Vue({
 			});
 			
 			console.log(response.data);
-			// 檢查是否有有效的郵遞區號（優先使用6碼）
+			// Check if there is a valid zip code (prioritize 6-digit)
 			const hasZipcode6 = response.data.zipcode6 && response.data.zipcode6.length > 0;
 			const hasZipcode = response.data.zipcode && response.data.zipcode.length > 0;
 			this.search_ok = hasZipcode6 || hasZipcode;

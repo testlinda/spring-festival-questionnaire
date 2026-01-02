@@ -1,6 +1,6 @@
 /**
  * Spring Festival Admin Panel
- * 管理後台 - 圖片管理、訊息管理、配置管理
+ * Admin dashboard - Image management, message management, configuration management
  */
 
 const app = new Vue({
@@ -41,45 +41,26 @@ const app = new Vue({
   },
   
   async mounted() {
-    console.log('Admin panel 初始化中...');
+    console.log('Admin panel initializing...');
     
-    // 等待 API Manager 初始化
-    await this.waitForAPIManager();
+    // Wait for API Manager initialization
+    await window.waitForAPI();
     
-    // 檢查管理員權限
+    // Check admin permissions
     await this.checkAdminStatus();
   },
   
   methods: {
     /**
-     * 等待 API Manager 初始化
-     */
-    async waitForAPIManager() {
-      let attempts = 0;
-      // 等待 apiManager 存在且已初始化（config 已載入）
-      while ((!window.apiManager || !window.apiManager.config) && attempts < 100) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-      
-      if (!window.apiManager || !window.apiManager.config) {
-        console.error('API Manager 初始化失敗，請確認 config.json 是否正確載入');
-        throw new Error('API Manager 初始化失敗');
-      }
-      
-      console.log('API Manager 初始化完成');
-    },
-    
-    /**
-     * 檢查管理員權限
+     * Check admin permissions
      */
     async checkAdminStatus() {
       try {
-        // 從 localStorage 獲取密碼
+        // Get password from localStorage
         const adminPassword = localStorage.getItem('adminPassword');
         
         if (!adminPassword) {
-          // 提示輸入密碼
+          // Prompt for password
           const password = prompt('請輸入管理員密碼：');
           if (!password) {
             this.isAdmin = false;
@@ -87,11 +68,11 @@ const app = new Vue({
             return;
           }
           
-          // 驗證密碼
+          // Verify password
           const result = await window.apiManager.checkAdmin(password);
           
           if (result.isAdmin) {
-            // 保存密碼到 localStorage
+            // Save password to localStorage
             localStorage.setItem('adminPassword', password);
             this.isAdmin = true;
             this.userEmail = result.email || 'admin';
@@ -100,20 +81,20 @@ const app = new Vue({
             this.isAdmin = false;
           }
         } else {
-          // 使用已保存的密碼驗證
+          // Use saved password for verification
           const result = await window.apiManager.checkAdmin(adminPassword);
           
           if (result.isAdmin) {
             this.isAdmin = true;
             this.userEmail = result.email || 'admin';
           } else {
-            // 密碼失效，清除並重新輸入
+            // Password expired, clear and re-enter
             localStorage.removeItem('adminPassword');
             await this.checkAdminStatus();
           }
         }
       } catch (error) {
-        console.error('權限檢查失敗:', error);
+        console.error('Permission check failed:', error);
         this.isAdmin = false;
       } finally {
         this.checkingAuth = false;
@@ -121,7 +102,7 @@ const app = new Vue({
     },
     
     /**
-     * 載入配置
+     * Load configuration
      */
     async loadConfig() {
       try {
@@ -132,16 +113,16 @@ const app = new Vue({
             images: result.config.images || {},
             imagekit: result.config.imagekit || { publicKey: '', urlEndpoint: '' }
           };
-          console.log('配置已載入:', this.config);
+          console.log('Config loaded:', this.config);
         }
       } catch (error) {
-        console.error('載入配置失敗:', error);
+        console.error('Failed to load config:', error);
         this.showToast('載入配置失敗', 'error');
       }
     },
     
     /**
-     * 儲存配置
+     * Save configuration
      */
     async saveConfig() {
       try {
@@ -153,20 +134,20 @@ const app = new Vue({
           this.showToast('儲存失敗: ' + result.message, 'error');
         }
       } catch (error) {
-        console.error('儲存配置失敗:', error);
+        console.error('Failed to save config:', error);
         this.showToast('儲存配置失敗', 'error');
       }
     },
     
     /**
-     * 載入訊息
+     * Load messages
      */
     async loadMessages() {
       try {
         const password = localStorage.getItem('adminPassword');
         const result = await window.apiManager.listMessages(password);
         if (result.status === 'ok' && result.messages) {
-          // 將數組轉換為對象
+          // Convert array to object
           const messagesObj = {};
           result.messages.forEach(msg => {
             messagesObj[msg.type] = msg.message;
@@ -177,57 +158,57 @@ const app = new Vue({
             thankyou: messagesObj.thankyou || ''
           };
           
-          console.log('訊息已載入:', this.messages);
+          console.log('Messages loaded:', this.messages);
         }
       } catch (error) {
-        console.error('載入訊息失敗:', error);
+        console.error('Failed to load messages:', error);
         this.showToast('載入訊息失敗', 'error');
       }
     },
     
     /**
-     * 儲存訊息
+     * Save messages
      */
     async saveMessages() {
       try {
         const password = localStorage.getItem('adminPassword');
         
-        // 儲存 hello 訊息
+        // Save hello message
         await window.apiManager.setMessage('hello', this.messages.hello, password);
         
-        // 儲存 thankyou 訊息
+        // Save thankyou message
         await window.apiManager.setMessage('thankyou', this.messages.thankyou, password);
         
         this.showToast('訊息已儲存', 'success');
       } catch (error) {
-        console.error('儲存訊息失敗:', error);
+        console.error('Failed to save messages:', error);
         this.showToast('儲存訊息失敗', 'error');
       }
     },
     
     /**
-     * 載入地址清單
+     * Load address list
      */
     async loadAddresses() {
       try {
         const password = localStorage.getItem('adminPassword');
         const result = await window.apiManager.listAddresses(password);
         if (result.status === 'ok') {
-          // 轉換為陣列格式
+          // Convert to array format
           this.addresses = Object.entries(result.addresses || {}).map(([name, data]) => ({
             name,
             ...data
           }));
-          console.log('地址清單已載入:', this.addresses);
+          console.log('Address list loaded:', this.addresses);
         }
       } catch (error) {
-        console.error('載入地址清單失敗:', error);
+        console.error('Failed to load address list:', error);
         this.showToast('載入地址清單失敗', 'error');
       }
     },
     
     /**
-     * 刪除地址
+     * Delete address
      */
     async deleteAddress(name) {
       if (!confirm(`確定要刪除 "${name}" 的地址嗎？`)) {
@@ -239,31 +220,31 @@ const app = new Vue({
         const result = await window.apiManager.deleteAddress(name, password);
         if (result.status === 'ok') {
           this.showToast('地址已刪除', 'success');
-          // 重新載入清單
+          // Reload list
           await this.loadAddresses();
         } else {
           this.showToast('刪除失敗: ' + result.message, 'error');
         }
       } catch (error) {
-        console.error('刪除地址失敗:', error);
+        console.error('Failed to delete address:', error);
         this.showToast('刪除地址失敗', 'error');
       }
     },
     
     /**
-     * 處理圖片上傳
+     * Handle image upload
      */
     async handleImageUpload(event, type) {
       const file = event.target.files[0];
       if (!file) return;
       
-      // 檢查檔案大小（25MB）
+      // Check file size (25MB)
       if (file.size > 25 * 1024 * 1024) {
         this.showToast('圖片大小不能超過 25MB', 'error');
         return;
       }
       
-      // 檢查檔案類型（僅允許 PNG）
+      // Check file type (only allow PNG)
       if (file.type !== 'image/png') {
         this.showToast('請上傳 PNG 檔（支援透明背景）', 'error');
         return;
@@ -272,33 +253,33 @@ const app = new Vue({
       try {
         this.uploadProgress = `正在上傳 ${type} 圖片...`;
         
-        // 讀取檔案為 Base64
+        // Read file as Base64
         const base64 = await this.readFileAsBase64(file);
         
-        // 上傳到 ImageKit
+        // Upload to ImageKit
         const password = localStorage.getItem('adminPassword');
         const result = await window.apiManager.uploadImage(base64, type, password);
         
         if (result.status === 'ok') {
           this.showToast('圖片上傳成功', 'success');
           
-          // 重新載入配置以顯示新圖片
+          // Reload config to display new image
           await this.loadConfig();
         } else {
           this.showToast('上傳失敗: ' + result.message, 'error');
         }
       } catch (error) {
-        console.error('上傳圖片失敗:', error);
+        console.error('Failed to upload image:', error);
         this.showToast('上傳圖片失敗', 'error');
       } finally {
         this.uploadProgress = null;
-        // 清空 input
+        // Clear input
         event.target.value = '';
       }
     },
 
     /**
-     * 清除指定圖片的 CDN 快取
+     * Clear specific image's CDN cache
      */
     async purgeImageCache(type) {
       const imageUrl = this.config.images?.[type]?.url;
@@ -322,7 +303,7 @@ const app = new Vue({
           this.showToast('清除失敗: ' + result.message, 'error');
         }
       } catch (error) {
-        console.error('清除快取失敗:', error);
+        console.error('Failed to clear cache:', error);
         this.showToast('清除快取失敗', 'error');
       } finally {
         this.uploadProgress = null;
@@ -330,7 +311,7 @@ const app = new Vue({
     },
     
     /**
-     * 讀取檔案為 Base64
+     * Read file as Base64
      */
     readFileAsBase64(file) {
       return new Promise((resolve, reject) => {
@@ -342,14 +323,14 @@ const app = new Vue({
     },
     
     /**
-     * 顯示 Toast 訊息
+     * Show toast message
      */
     showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       
-      // 根據類型設定邊框顏色
+      // Set border color based on type
       const borderColors = {
         success: 'border-green-500',
         error: 'border-red-500',
@@ -373,7 +354,7 @@ const app = new Vue({
   }
 });
 
-// 監聽 API 事件
+// Listen for API events
 window.addEventListener('api-loading', (e) => {
   const overlay = document.getElementById('loading-overlay');
   if (e.detail.loading) {
