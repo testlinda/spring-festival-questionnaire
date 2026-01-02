@@ -242,7 +242,8 @@ class SpringFestivalAPI {
    * Delete address (Admin only)
    */
   async deleteAddress(name, password) {
-    return this.request('deleteAddress', { name }, { password }, { method: 'POST' });
+    // API expects name in the POST body (not query params)
+    return this.request('deleteAddress', {}, { name, password }, { method: 'POST' });
   }
 
   // ============================================
