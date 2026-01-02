@@ -19,13 +19,14 @@ class ThemeManager {
   init() {
     // Load saved theme preference
     const savedTheme = this.loadTheme();
+    const defaultTheme = 'dark'; // Default to dark when no preference is saved
     
     if (savedTheme) {
       // Use saved theme
       this.setTheme(savedTheme, false);
     } else {
-      // Use system theme
-      this.setTheme(this.getSystemTheme(), false);
+      // Use default dark theme when no saved preference exists
+      this.setTheme(defaultTheme, false);
     }
 
     // Listen for system theme changes
