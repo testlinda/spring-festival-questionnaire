@@ -22,25 +22,33 @@ const INITIAL_ADDRESSES = [
     name: "test",
     zone_id: "10001",
     address: "台北市信義區信義路五段7號",
-    timestamp: "2026-01-01T10:30:00.000Z"
+    timestamp: "2026-01-15 10:30:00",
+    note: "",
+    tag: ""
   },
   {
     name: "Mary",
     zone_id: "403",
     address: "台中市西區模範街8巷23號",
-    timestamp: "2026-01-01T11:15:00.000Z"
+    timestamp: "",
+    note: "",
+    tag: ""
   },
   {
     name: "Emily",
     zone_id: "807031",
     address: "高雄市三民區寶盛里15鄰大順三路307號",
-    timestamp: "2026-01-01T14:20:00.000Z"
+    timestamp: "2026-01-20 14:20:00",
+    note: "",
+    tag: "colleague"
   },
   {
     name: "Sophia",
     zone_id: "106",
     address: "台北市大安區基隆路四段43號",
-    timestamp: "2026-01-01T15:45:00.000Z"
+    timestamp: "2026-01-18 15:45:00",
+    note: "",
+    tag: ""
   }
 ];
 
@@ -282,13 +290,15 @@ const MockData = {
 
     // 檢查是否已存在
     const existingIndex = this.addresses.findIndex(addr => addr.name === data.name);
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-').replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/, '$1-$2-$3 $4:$5:$6');
     
     const newAddress = {
       name: data.name,
-      zone_id: data.zone_id,
-      address: data.address,
-      timestamp: timestamp
+      zone_id: data.zone_id || '',
+      address: data.address || '',
+      timestamp: timestamp,
+      note: data.note || '',
+      tag: data.tag || ''
     };
 
     if (existingIndex >= 0) {
@@ -329,10 +339,20 @@ const MockData = {
     }
 
     // Backend response format: status='ok', addresses field, count field
+    // Transform addresses to include last_update and default note/tag fields
+    const addresses = this.addresses.map(addr => ({
+      address: addr.address || '',
+      last_update: addr.timestamp || '',
+      name: addr.name,
+      note: addr.note || '',
+      tag: addr.tag || '',
+      zone_id: addr.zone_id || ''
+    }));
+
     return {
       status: "ok",
-      addresses: [...this.addresses], // Return copy
-      count: this.addresses.length
+      addresses: addresses,
+      count: addresses.length
     };
   },
 

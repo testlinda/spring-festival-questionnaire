@@ -35,6 +35,8 @@ const app = new Vue({
     
     // Addresses
     addresses: [],
+    sortBy: null,  // 'name', 'zone_id', 'last_update'
+    sortOrder: 'asc',  // 'asc' or 'desc'
     
     // Upload
     uploadProgress: null
@@ -50,7 +52,79 @@ const app = new Vue({
     await this.checkAdminStatus();
   },
   
+  computed: {
+    /**
+     * Get sorted address list
+     */
+    sortedAddresses() {
+      if (!this.addresses || this.addresses.length === 0) {
+        return [];
+      }
+      
+      let sorted = [...this.addresses];
+      
+      if (this.sortBy) {
+        sorted.sort((a, b) => {
+          let aValue = a[this.sortBy];
+          let bValue = b[this.sortBy];
+          
+          // Handle empty/null values
+          if (aValue === '' || aValue === null || aValue === undefined) {
+            aValue = '';
+          }
+          if (bValue === '' || bValue === null || bValue === undefined) {
+            bValue = '';
+          }
+          
+          // For last_update, parse as date if not empty
+          if (this.sortBy === 'last_update' && aValue !== '' && bValue !== '') {
+            aValue = new Date(aValue).getTime() || 0;
+            bValue = new Date(bValue).getTime() || 0;
+          } else if (typeof aValue === 'string') {
+            // Case-insensitive string comparison
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+          }
+          
+          if (aValue < bValue) {
+            return this.sortOrder === 'asc' ? -1 : 1;
+          }
+          if (aValue > bValue) {
+            return this.sortOrder === 'asc' ? 1 : -1;
+          }
+          return 0;
+        });
+      }
+      
+      return sorted;
+    }
+  },
+  
   methods: {
+    /**
+     * Sort address list
+     */
+    sortAddresses(field) {
+      if (this.sortBy === field) {
+        // Toggle sort order if clicking the same field
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        // Set new sort field and reset to ascending
+        this.sortBy = field;
+        this.sortOrder = 'asc';
+      }
+    },
+    
+    /**
+     * Get sort indicator for column header
+     */
+    getSortIndicator(field) {
+      if (this.sortBy !== field) {
+        return '⇅';
+      }
+      return this.sortOrder === 'asc' ? '↑' : '↓';
+    },
+    
     /**
      * Check admin permissions
      */
@@ -194,11 +268,19 @@ const app = new Vue({
         const password = localStorage.getItem('adminPassword');
         const result = await window.apiManager.listAddresses(password);
         if (result.status === 'ok') {
-          // Convert to array format
-          this.addresses = Object.entries(result.addresses || {}).map(([name, data]) => ({
-            name,
-            ...data
-          }));
+          // Ensure addresses is an array (API might return array directly or object)
+          let addressList = result.addresses;
+          if (Array.isArray(addressList)) {
+            this.addresses = addressList;
+          } else if (typeof addressList === 'object') {
+            // Convert object to array format
+            this.addresses = Object.entries(addressList).map(([name, data]) => ({
+              name,
+              ...data
+            }));
+          } else {
+            this.addresses = [];
+          }
           console.log('Address list loaded:', this.addresses);
         }
       } catch (error) {
