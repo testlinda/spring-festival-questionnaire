@@ -168,7 +168,7 @@
         <button 
           @click="gotoNext" 
           id="btn_confirm" 
-          :disabled="mdf === null || send_loading"
+          :disabled="mdf === null || send_loading || send_lock"
           class="w-full py-4 px-6 bg-gradient-to-r from-emerald-700 to-lime-600 hover:from-emerald-800 hover:to-lime-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
         >
           <span v-if="!send_loading">下一步 →</span>

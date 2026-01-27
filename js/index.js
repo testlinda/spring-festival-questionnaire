@@ -11,6 +11,7 @@ var app = new Vue({
 		search_done: false,
 		send_status: "",
 		send_loading: false,
+		send_lock: false,
 		send_done: false,
 		send_ok: false,
 		// Images from config
@@ -148,7 +149,7 @@ var app = new Vue({
 		}
     },
     async confirmSend() {
-		if (this.send_loading) {
+		if (this.send_loading || this.send_lock) {
 			return;
 		}
 		this.send_loading = true;
@@ -165,6 +166,8 @@ var app = new Vue({
 			this.send_ok = (this.send_status === "ok");
 			
 			if (this.send_ok) {
+				// Lock further submissions until navigation completes
+				this.send_lock = true;
 				this.storeLocalData();
 				setTimeout(() => {
 					this.gotoResult();
@@ -178,7 +181,11 @@ var app = new Vue({
 				window.apiManager.showToast('送出失敗，請稍後再試', 'error');
 			}
 		} finally {
-			this.send_loading = false;
+			// Keep loading state on success to prevent double submit; release on failure
+			if (!this.send_ok) {
+				this.send_loading = false;
+				this.send_lock = false;
+			}
 			this.send_done = true;
 		}
     },
