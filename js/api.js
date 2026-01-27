@@ -103,12 +103,21 @@ class SpringFestivalAPI {
    * Fetch with timeout
    */
   async fetchWithTimeout(url, options, timeout) {
-    return Promise.race([
-      fetch(url, options),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), timeout)
-      )
-    ]);
+    // AbortController to prevent requests from completing after timeout
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      return response;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /**
