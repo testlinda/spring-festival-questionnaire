@@ -14,15 +14,96 @@ var app = new Vue({
 		send_done: false,
 		send_ok: false,
 		send_status: "",
-		headerSrc: "https://ik.imagekit.io/ccblack/spring-festival/header.png"
+			headerSrc: "https://ik.imagekit.io/ccblack/spring-festival/header.png",
+			errors: {
+				zone_id: "",
+				address: "",
+				name: ""
+			},
+			validationRules: {
+				name: { minLength: 2, maxLength: 50, required: true },
+				zoneId: { pattern: "^[0-9]{3,6}$", required: true },
+				address: { minLength: 5, maxLength: 200, required: true }
+			}
     };
   },
   async beforeMount(){
 	  await window.waitForAPI();
 	  this.getLocalData();
 	  await this.loadImagesFromConfig();
+	  this.loadValidationRules();
   },
   methods: {
+	loadValidationRules() {
+		const rules = window.apiManager?.config?.validation;
+		if (!rules) return;
+		this.validationRules = {
+			name: {
+				minLength: rules.name?.minLength ?? this.validationRules.name.minLength,
+				maxLength: rules.name?.maxLength ?? this.validationRules.name.maxLength,
+				required: rules.name?.required ?? this.validationRules.name.required
+			},
+			zoneId: {
+				pattern: rules.zoneId?.pattern ?? this.validationRules.zoneId.pattern,
+				required: rules.zoneId?.required ?? this.validationRules.zoneId.required
+			},
+			address: {
+				minLength: rules.address?.minLength ?? this.validationRules.address.minLength,
+				maxLength: rules.address?.maxLength ?? this.validationRules.address.maxLength,
+				required: rules.address?.required ?? this.validationRules.address.required
+			}
+		};
+	},
+
+	clearErrors() {
+		this.errors = { zone_id: "", address: "", name: "" };
+	},
+
+	validateName(name) {
+		const trimmed = (name || "").trim();
+		const { required, minLength, maxLength } = this.validationRules.name;
+		if (required && !trimmed) return "請輸入姓名";
+		if (trimmed.length < minLength) return `姓名至少需 ${minLength} 字`;
+		if (trimmed.length > maxLength) return `姓名請勿超過 ${maxLength} 字`;
+		return "";
+	},
+
+	validateZone(zone) {
+		const trimmed = (zone || "").trim();
+		const { required, pattern } = this.validationRules.zoneId;
+		if (required && !trimmed) return "請輸入郵遞區號";
+		const re = new RegExp(pattern);
+		if (trimmed && !re.test(trimmed)) return "郵遞區號格式不正確";
+		return "";
+	},
+
+	validateAddress(address) {
+		const trimmed = (address || "").trim();
+		const { required, minLength, maxLength } = this.validationRules.address;
+		if (required && !trimmed) return "請輸入地址";
+		if (trimmed.length < minLength) return `地址至少需 ${minLength} 字`;
+		if (trimmed.length > maxLength) return `地址請勿超過 ${maxLength} 字`;
+		return "";
+	},
+
+	validateForSend() {
+		this.clearErrors();
+		const nameErr = this.validateName(this.userName);
+		const zoneErr = this.validateZone(this.zone_id);
+		const addrErr = this.validateAddress(this.address);
+		if (nameErr) this.errors.name = nameErr;
+		if (zoneErr) this.errors.zone_id = zoneErr;
+		if (addrErr) this.errors.address = addrErr;
+		if (nameErr || zoneErr || addrErr) {
+			const first = nameErr || zoneErr || addrErr;
+			window.apiManager?.showToast(first, 'error');
+			return false;
+		}
+		this.userName = this.userName.trim();
+		this.zone_id = this.zone_id.trim();
+		this.address = this.address.trim();
+		return true;
+	},
 	async loadImagesFromConfig() {
 		if (!window.apiManager) return;
 		try {
@@ -56,6 +137,9 @@ var app = new Vue({
     },
 	async confirmSend() {
 		if (this.send_loading || this.send_lock || !this.confirmed || !this.zone_id || !this.address) {
+			return;
+		}
+		if (!this.validateForSend()) {
 			return;
 		}
 		
@@ -99,12 +183,13 @@ var app = new Vue({
 		if (this.search_loading) {
 			return;
 		}
-		if (!this.address.trim()) {
-			if (window.apiManager) {
-				window.apiManager.showToast('請先輸入地址', 'error');
-			}
+		const addrErr = this.validateAddress(this.address);
+		if (addrErr) {
+			this.errors.address = addrErr;
+			window.apiManager?.showToast(addrErr, 'error');
 			return;
 		}
+		this.address = this.address.trim();
 		
 		this.search_loading = true;
 		this.search_done = false;
@@ -129,6 +214,7 @@ var app = new Vue({
 				} else {
 					this.zone_id = response.data.zipcode;
 				}
+				this.errors.zone_id = "";
 				if (window.apiManager) {
 					window.apiManager.showToast('郵遞區號查詢成功', 'success');
 				}
